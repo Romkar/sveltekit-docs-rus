@@ -1,5 +1,4 @@
----
-title: Asset handling
+# Работа с ресурсами
 ---
 
 ## Caching and inlining

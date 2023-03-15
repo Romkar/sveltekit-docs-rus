@@ -1,5 +1,4 @@
----
-title: Command Line Interface
+# Интерфейс командной строки CLI
 ---
 
 SvelteKit projects use [Vite](https://vitejs.dev), meaning you'll mostly use its CLI (albeit via `npm run dev/build/preview` scripts):

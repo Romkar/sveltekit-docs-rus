@@ -37,12 +37,12 @@
   * [Упаковка](30-advanced/70-packaging.md)
 
 * Лучшие практики
-  * [Доступность](40-best-practices/10-accessibility.md)
+  * [Доступность (a11y)](40-best-practices/10-accessibility.md)
   * [SEO](40-best-practices/20-seo.md)
 
 * Ссылки
   * [Конфигурация](50-reference/10-configuration.md)
-  * [Интерфейс командной строки](50-reference/20-cli.md)
+  * [Интерфейс командной строки CLI](50-reference/20-cli.md)
   * [Модули](50-reference/30-modules.md)
   * [Типы](50-reference/40-types.md)
 

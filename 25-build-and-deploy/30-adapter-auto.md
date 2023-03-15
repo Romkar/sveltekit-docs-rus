@@ -1,5 +1,4 @@
----
-title: Zero-config deployments
+# Развёртывание с нулевой конфигурацией
 ---
 
 When you create a new SvelteKit project with `npm create svelte@latest`, it installs [`adapter-auto`](https://github.com/sveltejs/kit/tree/master/packages/adapter-auto) by default. This adapter automatically installs and uses the correct adapter for supported environments when you deploy:

@@ -1,5 +1,4 @@
----
-title: Netlify
+# Netlify
 ---
 
 To deploy to Netlify, use [`adapter-netlify`](https://github.com/sveltejs/kit/tree/master/packages/adapter-netlify).

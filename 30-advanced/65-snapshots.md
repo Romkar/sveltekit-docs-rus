@@ -1,5 +1,4 @@
----
-title: Snapshots
+# Снэпшоты
 ---
 
 Ephemeral DOM state — like scroll positions on sidebars, the content of `<input>` elements and so on — is discarded when you navigate from one page to another.

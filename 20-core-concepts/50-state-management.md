@@ -1,5 +1,4 @@
----
-title: State management
+# Управление состоянием
 ---
 
 If you're used to building client-only apps, state management in an app that spans server and client might seem intimidating. This section provides tips for avoiding some common gotchas.

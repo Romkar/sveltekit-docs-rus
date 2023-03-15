@@ -1,6 +1,4 @@
----
-title: Migrating from Sapper
-rank: 1
+# Миграция с Sapper
 ---
 
 SvelteKit is the successor to Sapper and shares many elements of its design.

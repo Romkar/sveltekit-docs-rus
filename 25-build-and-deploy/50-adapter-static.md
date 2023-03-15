@@ -1,5 +1,4 @@
----
-title: Static site generation
+# Создание статических сайтов
 ---
 
 To use SvelteKit as a static site generator (SSG), use [`adapter-static`](https://github.com/sveltejs/kit/tree/master/packages/adapter-static).

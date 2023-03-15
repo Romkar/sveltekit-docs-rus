@@ -1,5 +1,4 @@
----
-title: Integrations
+# Интеграции
 ---
 
 ## Preprocessors

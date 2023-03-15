@@ -1,5 +1,4 @@
----
-title: Accessibility
+# Доступность (a11y)
 ---
 
 SvelteKit strives to provide an accessible platform for your app by default. Svelte's [compile-time accessibility checks](https://svelte.dev/docs#accessibility-warnings) will also apply to any SvelteKit application you build.

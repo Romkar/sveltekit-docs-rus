@@ -1,5 +1,4 @@
----
-title: Types
+# Типы
 ---
 
 ## Public types

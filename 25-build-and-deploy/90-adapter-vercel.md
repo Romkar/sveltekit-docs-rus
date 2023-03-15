@@ -1,5 +1,4 @@
----
-title: Vercel
+# Vercel
 ---
 
 To deploy to Vercel, use [`adapter-vercel`](https://github.com/sveltejs/kit/tree/master/packages/adapter-vercel).
