@@ -51,6 +51,9 @@ On the server, this store can only be subscribed to during component initializat
 const updated: Readable<boolean> & { check(): Promise<boolean> };
 
 ---
+## $env/static/private
+
+---
 ## $lib
 
 Это простой псевдоним `src/lib` или любого другого каталога, указанного в качестве `config.kit.files.lib`. Он позволяет получить доступ к общим компонентам и модулям утилит без такой ../../../../../../ бессмыслицы.
@@ -58,6 +61,17 @@ const updated: Readable<boolean> & { check(): Promise<boolean> };
 ### `$lib/server`
 
 A subdirectory of $lib. SvelteKit will prevent you from importing any modules in $lib/server into client-side code. See server-only modules.
+
+## @sveltejs/kit
+
+import { error, fail, json, redirect, text } from '@sveltejs/kit';
+
+### error
+
+### json
+
+### redirect
+
 
 
 ## @sveltejs/kit/vite
