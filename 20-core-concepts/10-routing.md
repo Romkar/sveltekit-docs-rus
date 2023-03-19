@@ -118,7 +118,7 @@ export const load = (({ params }) => {
 <!-- tabs:start -->
 #### **JavaScript**
 **```ambient.d.ts```**
-```js
+```ts
 declare global {
 	const getPostFromDatabase: (slug: string) => {
 		title: string;
@@ -147,7 +147,7 @@ export async function load({ params }) {
 
 #### **TypeScript**
 **```ambient.d.ts```**
-```js
+```ts
 declare global {
 	const getPostFromDatabase: (slug: string) => {
 		title: string;

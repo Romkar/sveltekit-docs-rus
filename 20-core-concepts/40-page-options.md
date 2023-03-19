@@ -7,7 +7,7 @@ You can control each of these on a page-by-page basis by exporting options from 
 
 You can mix and match these options in different areas of your app. For example you could prerender your marketing page for maximum speed, server-render your dynamic pages for SEO and accessibility and turn your admin section into an SPA by rendering it on the client only. This makes SvelteKit very versatile.
 
-## prerender
+## пререндер
 
 It's likely that at least some routes of your app can be represented as a simple HTML file generated at build time. These routes can be [_prerendered_](glossary#prerendering).
 

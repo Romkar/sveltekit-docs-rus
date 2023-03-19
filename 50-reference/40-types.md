@@ -154,3 +154,5 @@ Others are required for SvelteKit to work properly, and should also be left unto
 ## App
 
 > TYPES: App
+
+### PageData

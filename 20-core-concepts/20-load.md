@@ -1,27 +1,50 @@
 # Загрузка данных
 ---
 
-Before a [`+page.svelte`](routing#page-page-svelte) component (and its containing [`+layout.svelte`](routing#layout-layout-svelte) components) can be rendered, we often need to get some data. This is done by defining `load` functions.
+Прежде чем компонент [`+page.svelte`](/20-core-concepts/10-routing?id=pagesvelte) (и содержащие его компоненты [`+layout.svelte`](/20-core-concepts/10-routing?id=layoutsvelte)) будет отрисован, нам часто необходимо получить некоторые данные. Это делается путем определения функций `load`.
 
-## Page data
+## Данные страницы
 
 A `+page.svelte` file can have a sibling `+page.js` (or `+page.ts`) that exports a `load` function, the return value of which is available to the page via the `data` prop:
 
+Файл `+page.svelte` может иметь дочерний `+page.js` (или `+page.ts`), экспортирующий функцию `load`, возвращаемое значение которой доступно странице через параметр `data`:
+
+<!-- tabs:start -->
+#### **JavaScript**
+**```src/routes/blog/[slug]/+page.js```**
 ```js
-/// file: src/routes/blog/[slug]/+page.js
 /** @type {import('./$types').PageLoad} */
 export function load({ params }) {
 	return {
 		post: {
-			title: `Title for ${params.slug} goes here`,
-			content: `Content for ${params.slug} goes here`
+			title: `Заголовок для ${params.slug} находится здесь`,
+			content: `Содержание для ${params.slug} находится здесь`
 		}
 	};
 }
 ```
 
+#### **TypeScript**
+**```src/routes/blog/[slug]/+page.ts```**
+```ts
+import type { PageLoad } from './$types';
+ 
+export const load = (({ params }) => {
+  return {
+    post: {
+      title: `Заголовок для ${params.slug} находится здесь`,
+	  content: `Содержание для ${params.slug} находится здесь`
+    }
+  };
+}) satisfies PageLoad;
+```
+<!-- tabs:end -->
+
+
+<!-- tabs:start -->
+#### **JavaScript**
+**```src/routes/blog/[slug]/+page.svelte```**
 ```svelte
-/// file: src/routes/blog/[slug]/+page.svelte
 <script>
 	/** @type {import('./$types').PageData} */
 	export let data;
@@ -31,46 +54,81 @@ export function load({ params }) {
 <div>{@html data.post.content}</div>
 ```
 
-Thanks to the generated `$types` module, we get full type safety.
+#### **TypeScript**
+**```src/routes/blog/[slug]/+page.svelte```**
+```svelte
+<script lang="ts">
+  import type { PageData } from './$types';
 
-A `load` function in a `+page.js` file runs both on the server and in the browser. If your `load` function should _always_ run on the server (because it uses private environment variables, for example, or accesses a database) then it would go in a `+page.server.js` instead.
+  export let data: PageData;
+</script>
 
-A more realistic version of your blog post's `load` function, that only runs on the server and pulls data from a database, might look like this:
+<h1>{data.post.title}</h1>
+<div>{@html data.post.content}</div>
+```
+<!-- tabs:end -->
 
-```js
-/// file: src/routes/blog/[slug]/+page.server.js
-// @filename: ambient.d.ts
+Благодаря сгенерированному модулю `$types` мы получаем полную безопасность типов.
+
+Функция `load` в файле `+page.js` выполняется как на сервере, так и в браузере. Если ваша функция `load` должна _всегда_ работать на сервере (например, потому что она использует частные переменные окружения или обращается к базе данных), то она должна быть помещена в файл `+page.server.js`.
+
+Более реалистичная версия функции `load` вашего блога, которая работает только на сервере и получает данные из базы данных, может выглядеть следующим образом:
+
+<!-- tabs:start -->
+#### **JavaScript**
+**```ambient.d.ts```**
+```ts
 declare module '$lib/server/database' {
 	export function getPost(slug: string): Promise<{ title: string, content: string }>
 }
-
-// @filename: index.js
-// ---cut---
+```
+**```src/routes/blog/[slug]/+page.server.js```**
+```js
 import * as db from '$lib/server/database';
-
+ 
 /** @type {import('./$types').PageServerLoad} */
 export async function load({ params }) {
-	return {
-		post: await db.getPost(params.slug)
-	};
+  return {
+    post: await db.getPost(params.slug)
+  };
 }
 ```
+#### **TypeScript**
+**```ambient.d.ts```**
+```ts
+declare module '$lib/server/database' {
+	export function getPost(slug: string): Promise<{ title: string, content: string }>
+}
+```
+**```src/routes/blog/[slug]/+page.server.ts```**
+```ts
+import * as db from '$lib/server/database';
+import type { PageServerLoad } from './$types';
+ 
+export const load = (async ({ params }) => {
+  return {
+    post: await db.getPost(params.slug)
+  };
+}) satisfies PageServerLoad;
+```
+<!-- tabs:end -->
 
-Notice that the type changed from `PageLoad` to `PageServerLoad`, because server `load` functions can access additional arguments. To understand when to use `+page.js` and when to use `+page.server.js`, see [Universal vs server](load#universal-vs-server).
+Обратите внимание, что тип изменился с `PageLoad` на `PageServerLoad`, поскольку серверные функции `load` могут обращаться к дополнительным аргументам. Чтобы понять, когда использовать `+page.js`, а когда `+page.server.js`, смотрите [универсальный против серверного](/20-core-concepts/20-load?id=Универсальный-против-серверного).
 
-## Layout data
+## Данные макета
 
-Your `+layout.svelte` files can also load data, via `+layout.js` or `+layout.server.js`.
+Ваши файлы `+layout.svelte` также могут загружать данные через `+layout.js` или `+layout.server.js`.
 
-```js
-/// file: src/routes/blog/[slug]/+layout.server.js
-// @filename: ambient.d.ts
+<!-- tabs:start -->
+#### **JavaScript**
+**```ambient.d.ts```**
+```ts
 declare module '$lib/server/database' {
 	export function getPostSummaries(): Promise<Array<{ title: string, slug: string }>>
 }
-
-// @filename: index.js
-// ---cut---
+```
+**```src/routes/blog/[slug]/+layout.server.js```**
+```js
 import * as db from '$lib/server/database';
 
 /** @type {import('./$types').LayoutServerLoad} */
@@ -80,21 +138,42 @@ export async function load() {
 	};
 }
 ```
+#### **TypeScript**
+**```ambient.d.ts```**
+```ts
+declare module '$lib/server/database' {
+	export function getPostSummaries(): Promise<Array<{ title: string, slug: string }>>
+}
+```
+**```src/routes/blog/[slug]/+layout.server.ts```**
+```ts
+import * as db from '$lib/server/database';
+import type { LayoutServerLoad } from './$types';
+ 
+export const load = (async () => {
+  return {
+    posts: await db.getPostSummaries()
+  };
+}) satisfies LayoutServerLoad;
+```
+<!-- tabs:end -->
 
+<!-- tabs:start -->
+#### **JavaScript**
+**```src/routes/blog/[slug]/+layout.svelte```**
 ```svelte
-/// file: src/routes/blog/[slug]/+layout.svelte
 <script>
 	/** @type {import('./$types').LayoutData} */
 	export let data;
 </script>
 
 <main>
-	<!-- +page.svelte is rendered in this <slot> -->
+	<!-- +page.svelte отображается здесь <slot> -->
 	<slot />
 </main>
 
 <aside>
-	<h2>More posts</h2>
+	<h2>Больше постов</h2>
 	<ul>
 		{#each data.posts as post}
 			<li>
@@ -106,19 +185,47 @@ export async function load() {
 	</ul>
 </aside>
 ```
+#### **TypeScript**
+**```src/routes/blog/[slug]/+layout.svelte```**
+```svelte
+<script lang="ts">
+  import type { LayoutData } from './$types';
 
-Data returned from layout `load` functions is available to child `+layout.svelte` components and the `+page.svelte` component as well as the layout that it 'belongs' to.
+  export let data: LayoutData;
+</script>
 
-```diff
-/// file: src/routes/blog/[slug]/+page.svelte
+<main>
+	<!-- +page.svelte отображается здесь <slot> -->
+	<slot />
+</main>
+
+<aside>
+	<h2>Больше постов</h2>
+	<ul>
+		{#each data.posts as post}
+			<li>
+				<a href="/blog/{post.slug}">
+					{post.title}
+				</a>
+			</li>
+		{/each}
+	</ul>
+</aside>
+```
+<!-- tabs:end -->
+
+Данные, возвращаемые функциями `load` макета, доступны дочерним компонентам `+layout.svelte` и компоненту `+page.svelte`, а также макету, к которому он "принадлежит".
+
+**```src/routes/blog/[slug]/+page.svelte```**
+```svelte
 <script>
 +	import { page } from '$app/stores';
 
 	/** @type {import('./$types').PageData} */
 	export let data;
 
-+	// we can access `data.posts` because it's returned from
-+	// the parent layout `load` function
++	// мы можем получить доступ к `data.posts` потому что он возвращается из
++	// функции родительского макета `load`
 +	$: index = data.posts.findIndex(post => post.slug === $page.params.slug);
 +	$: next = data.posts[index - 1];
 </script>
@@ -127,17 +234,17 @@ Data returned from layout `load` functions is available to child `+layout.svelte
 <div>{@html data.post.content}</div>
 
 +{#if next}
-+	<p>Next post: <a href="/blog/{next.slug}">{next.title}</a></p>
++	<p>Следующая публикация: <a href="/blog/{next.slug}">{next.title}</a></p>
 +{/if}
 ```
 
-> If multiple `load` functions return data with the same key, the last one 'wins' — the result of a layout `load` returning `{ a: 1, b: 2 }` and a page `load` returning `{ b: 3, c: 4 }` would be `{ a: 1, b: 3, c: 4 }`.
+> Если несколько функций `load` возвращают данные с одним и тем же ключом, то "побеждает" последняя - результат того, что функция макета `load` возвращает `{ a: 1, b: 2 }` и страницы `load`, возвращающей `{ b: 3, c: 4 }` будет `{ a: 1, b: 3, c: 4 }`.
 
 ## $page.data
 
-The `+page.svelte` component, and each `+layout.svelte` component above it, has access to its own data plus all the data from its parents.
+Компонент `+page.svelte` и каждый компонент `+layout.svelte` над ним имеют доступ к своим собственным данным плюс ко всем данным своих родителей.
 
-In some cases, we might need the opposite — a parent layout might need to access page data or data from a child layout. For example, the root layout might want to access a `title` property returned from a `load` function in `+page.js` or `+page.server.js`. This can be done with `$page.data`:
+В некоторых случаях нам может понадобиться обратное - родительскому макету может понадобиться доступ к данным страницы или дочернего макета. Например, корневой макет может захотеть получить доступ к свойству `title`, возвращаемому из функции `load` в `+page.js` или `+page.server.js`. Это можно сделать с помощью `$page.data`:
 
 ```svelte
 /// file: src/routes/+layout.svelte
@@ -150,24 +257,24 @@ In some cases, we might need the opposite — a parent layout might need to acce
 </svelte:head>
 ```
 
-Type information for `$page.data` is provided by `App.PageData`.
+Информация о типе для `$page.data` предоставляется [`App.PageData`](/50-reference/40-types?id=pagedata).
 
-## Universal vs server
+## Универсальный против серверного
 
-As we've seen, there are two types of `load` function:
+Как мы уже видели, существует два типа функции `load`:
 
-* `+page.js` and `+layout.js` files export _universal_ `load` functions that run both on the server and in the browser
-* `+page.server.js` and `+layout.server.js` files export _server_ `load` functions that only run server-side
+* файлы `+page.js` и `+layout.js` экспортируют _универсальные_ `load` функции, которые выполняются как на сервере, так и в браузере
+* файлы `+page.server.js` и `+layout.server.js` экспортируют _серверные_ функции `load`, которые работают только на стороне сервера.
 
-Conceptually, they're the same thing, but there are some important differences to be aware of.
+Концептуально это одно и то же, но есть несколько важных различий, о которых следует знать.
 
-### When does which load function run?
+### Когда какая функция загрузки выполняется?
 
-Server `load` functions _always_ run on the server.
+Серверная функция `load` _всегда_ выполняются на сервере.
 
-By default, universal `load` functions run on the server during SSR when the user first visits your page. They will then run again during hydration, reusing any responses from [fetch requests](#making-fetch-requests). All subsequent invocations of universal `load` functions happen in the browser. You can customize the behavior through [page options](page-options). If you disable [server side rendering](page-options#ssr), you'll get an SPA and universal `load` functions _always_ run on the client.
+По умолчанию универсальные функции `load` запускаются на сервере во время SSR, когда пользователь впервые посещает вашу страницу. Затем они будут снова запущены во время гидратации, повторно используя любые ответы от [fetch-запросов](/20-core-concepts/20-load?id=Выполнение-fetch-запросов). Все последующие вызовы универсальных функций `load` происходят в браузере. Вы можете настроить поведение через [параметры страницы](/20-core-concepts/40-page-options). Если вы отключите [рендеринг на стороне сервера (SSR)](/20-core-concepts/40-page-options?id=ssr), вы получите SPA, а универсальные функции `load` будут _всегда_ выполняться на клиенте.
 
-A `load` function is invoked at runtime, unless you [prerender](page-options#prerender) the page — in that case, it's invoked at build time.
+Функция `load` вызывается во время выполнения, если только вы не [пререндерите](/20-core-concepts/40-page-options?id=пререндер) страницу - в этом случае она вызывается во время сборки.
 
 ### Input
 
@@ -226,7 +333,7 @@ Given a `route.id` of `/a/[b]/[...c]` and a `url.pathname` of `/a/x/y/z`, the `p
 }
 ```
 
-## Making fetch requests
+## Выполнение fetch запросов
 
 To get data from an external API or a `+server.js` handler, you can use the provided `fetch` function, which behaves identically to the [native `fetch` web API](https://developer.mozilla.org/en-US/docs/Web/API/fetch) with a few additional features:
 
