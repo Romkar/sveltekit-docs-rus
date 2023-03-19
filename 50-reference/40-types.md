@@ -155,4 +155,7 @@ Others are required for SvelteKit to work properly, and should also be left unto
 
 > TYPES: App
 
+### Cookies
+
+
 ### PageData

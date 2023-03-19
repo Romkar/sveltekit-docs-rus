@@ -12,7 +12,7 @@ Code in these modules will run when the application starts up, making them usefu
 
 > You can configure the location of these files with [`config.kit.files.hooks`](configuration#files).
 
-## Server hooks
+## Серверные хуки
 
 The following hooks can be added to `src/hooks.server.js`:
 

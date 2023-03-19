@@ -217,8 +217,8 @@ export const load = (async () => {
 Данные, возвращаемые функциями `load` макета, доступны дочерним компонентам `+layout.svelte` и компоненту `+page.svelte`, а также макету, к которому он "принадлежит".
 
 **```src/routes/blog/[slug]/+page.svelte```**
-```svelte
-<script>
+```diff
+	<script>
 +	import { page } from '$app/stores';
 
 	/** @type {import('./$types').PageData} */
@@ -228,10 +228,10 @@ export const load = (async () => {
 +	// функции родительского макета `load`
 +	$: index = data.posts.findIndex(post => post.slug === $page.params.slug);
 +	$: next = data.posts[index - 1];
-</script>
+	</script>
 
-<h1>{data.post.title}</h1>
-<div>{@html data.post.content}</div>
+	<h1>{data.post.title}</h1>
+	<div>{@html data.post.content}</div>
 
 +{#if next}
 +	<p>Следующая публикация: <a href="/blog/{next.slug}">{next.title}</a></p>
@@ -276,55 +276,67 @@ export const load = (async () => {
 
 Функция `load` вызывается во время выполнения, если только вы не [пререндерите](/20-core-concepts/40-page-options?id=пререндер) страницу - в этом случае она вызывается во время сборки.
 
-### Input
+### Ввод
 
-Both universal and server `load` functions have access to properties describing the request (`params`, `route` and `url`) and various functions (`fetch`, `setHeaders`, `parent` and `depends`). These are described in the following sections.
+Как универсальные, так и серверные функции `load` имеют доступ к свойствам, описывающим запрос (`params`, `route` и `url`) и различные функции (`fetch`, `setHeaders`, `parent` и `depends`). Они описаны в следующих разделах.
 
-Server `load` functions are called with a `ServerLoadEvent`, which inherits `clientAddress`, `cookies`, `locals`, `platform` and `request` from `RequestEvent`.
+Серверные функции `load` вызываются с помощью `ServerLoadEvent`, которое наследует `clientAddress`, `cookies`, `locals`, `platform` и `request` от `RequestEvent`.
 
-Universal `load` functions are called with a `LoadEvent`, which has a `data` property. If you have `load` functions in both `+page.js` and `+page.server.js` (or `+layout.js` and `+layout.server.js`), the return value of the server `load` function is the `data` property of the universal `load` function's argument.
+Универсальные функции `load` вызываются с помощью `LoadEvent`, которое имеет свойство `data`. Если у вас есть функции `load` и в `+page.js`, и в `+page.server.js` (или `+layout.js` и `+layout.server.js`), возвращаемое значение функции `load` сервера является свойством `data` аргумента универсальной функции `load`.
 
-### Output
+### Вывод
 
-A universal `load` function can return an object containing any values, including things like custom classes and component constructors.
+Универсальная функция `load` может возвращать объект, содержащий любые значения, включая такие вещи, как пользовательские классы и конструкторы компонентов.
 
-A server `load` function must return data that can be serialized with [devalue](https://github.com/rich-harris/devalue) — anything that can be represented as JSON plus things like `BigInt`, `Date`, `Map`, `Set` and `RegExp`, or repeated/cyclical references — so that it can be transported over the network. Your data can include [promises](#streaming-with-promises), in which case it will be streamed to browsers.
+Функция `load` сервера должна возвращать данные, которые могут быть сериализованы с помощью [devalue](https://github.com/rich-harris/devalue) - все, что может быть представлено как JSON, плюс такие вещи, как `BigInt`, `Date`, `Map`, `Set` и `RegExp`, или повторяющиеся/циклические ссылки - чтобы их можно было передавать по сети. Ваши данные могут включать [промисы](/20-core-concepts/20-load?id=Потоковая-передача-с-промисами), в этом случае они будут передаваться в браузеры.
 
-### When to use which
+### Когда что использовать
 
-Server `load` functions are convenient when you need to access data directly from a database or filesystem, or need to use private environment variables.
+Серверные функции `load` удобны, когда вам нужно получить доступ к данным непосредственно из базы данных или файловой системы, или необходимо использовать приватные переменные окружения.
 
-Universal `load` functions are useful when you need to `fetch` data from an external API and don't need private credentials, since SvelteKit can get the data directly from the API rather than going via your server. They are also useful when you need to return something that can't be serialized, such as a Svelte component constructor.
+Универсальные функции `load` полезны, когда вам нужно получить (`fetch`) данные из внешнего API и не нужны приватные учетные данные, поскольку SvelteKit может получить данные непосредственно из API, а не через ваш сервер. Они также полезны, когда вам нужно вернуть что-то, что не может быть сериализовано, например, конструктор компонента Svelte.
 
-In rare cases, you might need to use both together — for example, you might need to return an instance of a custom class that was initialised with data from your server.
+В редких случаях вам может понадобиться использовать оба метода вместе - например, вам может понадобиться вернуть экземпляр пользовательского класса, который был инициализирован данными с вашего сервера.
 
-## Using URL data
+## Использование данных URL
 
-Often the `load` function depends on the URL in one way or another. For this, the `load` function provides you with `url`, `route` and `params`.
+Часто функция `load` тем или иным образом зависит от URL. Для этого функция `load` предоставляет вам `url`, `route` и `params`.
 
 ### url
 
-An instance of [`URL`](https://developer.mozilla.org/en-US/docs/Web/API/URL), containing properties like the `origin`, `hostname`, `pathname` and `searchParams` (which contains the parsed query string as a [`URLSearchParams`](https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams) object). `url.hash` cannot be accessed during `load`, since it is unavailable on the server.
+Экземпляр [`URL`](https://developer.mozilla.org/en-US/docs/Web/API/URL), содержащий такие свойства, как `origin`, `hostname`, `pathname` и `searchParams` (который содержит разобранную строку запроса как объект [`URLSearchParams`](https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams)). К `url.hash` нельзя получить доступ во время `загрузки`, поскольку он недоступен на сервере.
 
-> In some environments this is derived from request headers during server-side rendering. If you're using [adapter-node](adapter-node), for example, you may need to configure the adapter in order for the URL to be correct.
+> В некоторых средах это значение извлекается из заголовков запроса во время рендеринга на стороне сервера. Если вы, например, используете [adapter-node](/25-build-and-deploy/40-adapter-node), вам может потребоваться настроить адаптер, чтобы URL был корректным.
 
-### route
+### маршрут
 
-Contains the name of the current route directory, relative to `src/routes`:
+Содержит имя текущего каталога маршрутов, относительно `src/routes`:
 
+<!-- tabs:start -->
+#### **JavaScript**
+**```src/routes/a/[b]/[...c]/+page.js```**
 ```js
-/// file: src/routes/a/[b]/[...c]/+page.js
 /** @type {import('./$types').PageLoad} */
 export function load({ route }) {
 	console.log(route.id); // '/a/[b]/[...c]'
 }
 ```
+#### **TypeScript**
+**```src/routes/a/[b]/[...c]/+page.ts```**
+```ts
+import type { PageLoad } from './$types';
+ 
+export const load = (({ route }) => {
+  console.log(route.id); // '/a/[b]/[...c]'
+}) satisfies PageLoad;
+```
+<!-- tabs:end -->
 
 ### params
 
-`params` is derived from `url.pathname` and `route.id`.
+`params` является производным от `url.pathname` и `route.id`.
 
-Given a `route.id` of `/a/[b]/[...c]` and a `url.pathname` of `/a/x/y/z`, the `params` object would look like this:
+Учитывая `route.id` из `/a/[b]/[...c]` и `url.pathname` из `/a/x/y/z`, объект `params` будет выглядеть следующим образом:
 
 ```json
 {
@@ -334,16 +346,18 @@ Given a `route.id` of `/a/[b]/[...c]` and a `url.pathname` of `/a/x/y/z`, the `p
 ```
 
 ## Выполнение fetch запросов
+  
+Для получения данных из внешнего API или обработчика `+server.js` можно использовать предоставляемую функцию `fetch`, которая ведет себя идентично [нативный `fetch` веб-API](https://developer.mozilla.org/en-US/docs/Web/API/fetch) с несколькими дополнительными возможностями:
 
-To get data from an external API or a `+server.js` handler, you can use the provided `fetch` function, which behaves identically to the [native `fetch` web API](https://developer.mozilla.org/en-US/docs/Web/API/fetch) with a few additional features:
+- она может использоваться для выполнения авторизованных запросов на сервере, поскольку наследует заголовки `cookie` и `authorization` для запроса страницы
+- она может выполнять относительные запросы на сервере (обычно `fetch` требует URL с оригиналом при использовании в контексте сервера)
+- внутренние запросы (например, для маршрутов `+server.js`) идут прямо к функции-обработчику при работе на сервере, без накладных расходов на HTTP-вызов
+- во время рендеринга на стороне сервера ответ будет перехвачен и вставлен в отрисованный HTML с помощью методов `text` и `json` объекта `Response`. Обратите внимание, что заголовки _не_ будут сериализованы, если они явно не включены через [`filterSerializedResponseHeaders`](/30-advanced/20-hooks?id=handle). Затем, во время гидратации, ответ будет считан из HTML, гарантируя согласованность и предотвращая дополнительный сетевой запрос - если вы получили предупреждение в консоли браузера при использовании `fetch` браузера вместо `load` `fetch`, то вот почему.
 
-- it can be used to make credentialed requests on the server, as it inherits the `cookie` and `authorization` headers for the page request
-- it can make relative requests on the server (ordinarily, `fetch` requires a URL with an origin when used in a server context)
-- internal requests (e.g. for `+server.js` routes) go direct to the handler function when running on the server, without the overhead of an HTTP call
-- during server-side rendering, the response will be captured and inlined into the rendered HTML by hooking into the `text` and `json` methods of the `Response` object. Note that headers will _not_ be serialized, unless explicitly included via [`filterSerializedResponseHeaders`](hooks#server-hooks-handle). Then, during hydration, the response will be read from the HTML, guaranteeing consistency and preventing an additional network request - if you got a warning in your browser console when using the browser `fetch` instead of the `load` `fetch`, this is why.
-
+<!-- tabs:start -->
+#### **JavaScript**
+**```src/routes/items/[id]/+page.js```**
 ```js
-/// file: src/routes/items/[id]/+page.js
 /** @type {import('./$types').PageLoad} */
 export async function load({ fetch, params }) {
 	const res = await fetch(`/api/items/${params.id}`);
@@ -352,22 +366,36 @@ export async function load({ fetch, params }) {
 	return { item };
 }
 ```
+#### **TypeScript**
+**```src/routes/items/[id]/+page.ts```**
+```ts
+import type { PageLoad } from './$types';
+ 
+export const load = (async ({ fetch, params }) => {
+  const res = await fetch(`/api/items/${params.id}`);
+  const item = await res.json();
+ 
+  return { item };
+}) satisfies PageLoad;
+```
+<!-- tabs:end -->
 
-> Cookies will only be passed through if the target host is the same as the SvelteKit application or a more specific subdomain of it.
+> Cookies будут передаваться только в том случае, если целевой хост совпадает с приложением SvelteKit или является его более конкретным поддоменом.
 
-## Cookies and headers
+## Файлы cookie и заголовки
 
-A server `load` function can get and set [`cookies`](types#public-types-cookies).
+Серверная функция `load` может получать и устанавливать [`cookies`](/50-reference/40-types?id=cookies).
 
-```js
-/// file: src/routes/+layout.server.js
-// @filename: ambient.d.ts
+<!-- tabs:start -->
+#### **JavaScript**
+**```ambient.d.ts```**
+```ts
 declare module '$lib/server/database' {
 	export function getUser(sessionid: string | undefined): Promise<{ name: string, avatar: string }>
 }
-
-// @filename: index.js
-// ---cut---
+```
+**```src/routes/+layout.server.js```**
+```js
 import * as db from '$lib/server/database';
 
 /** @type {import('./$types').LayoutServerLoad} */
@@ -379,21 +407,43 @@ export async function load({ cookies }) {
 	};
 }
 ```
+#### **TypeScript**
+**```ambient.d.ts```**
+```ts
+declare module '$lib/server/database' {
+	export function getUser(sessionid: string | undefined): Promise<{ name: string, avatar: string }>
+}
+```
+**```src/routes/+layout.server.ts```**
+```ts
+import * as db from '$lib/server/database';
+import type { LayoutServerLoad } from './$types';
+ 
+export const load = (async ({ cookies }) => {
+  const sessionid = cookies.get('sessionid');
+ 
+  return {
+    user: await db.getUser(sessionid)
+  };
+}) satisfies LayoutServerLoad;
+```
+<!-- tabs:end -->
 
-> When setting cookies, be aware of the `path` property. By default, the `path` of a cookie is the current pathname. If you for example set a cookie at page `admin/user`, the cookie will only be available within the `admin` pages by default. In most cases you likely want to set `path` to `'/'` to make the cookie available throughout your app.
+> При установке cookie-файлов обратите внимание на свойство `path`. По умолчанию `path` cookie - это текущее имя пути. Если вы, например, установите cookie на странице `admin/user`, то по умолчанию cookie будет доступен только на страницах `admin`. В большинстве случаев вы, вероятно, захотите установить `path` в `'/'`, чтобы cookie был доступен во всем вашем приложении.
 
-Both server and universal `load` functions have access to a `setHeaders` function that, when running on the server, can set headers for the response. (When running in the browser, `setHeaders` has no effect.) This is useful if you want the page to be cached, for example:
+Как серверные, так и универсальные функции `load` имеют доступ к функции `setHeaders`, которая при запуске на сервере может устанавливать заголовки для ответа. (При выполнении в браузере функция `setHeaders` не имеет эффекта). Это полезно, если вы хотите, чтобы страница была кэширована, например:
 
+<!-- tabs:start -->
+#### **JavaScript**
+**```src/routes/products/+page.js```**
 ```js
-// @errors: 2322 1360
-/// file: src/routes/products/+page.js
 /** @type {import('./$types').PageLoad} */
 export async function load({ fetch, setHeaders }) {
 	const url = `https://cms.example.com/products.json`;
 	const response = await fetch(url);
 
-	// cache the page for the same length of time
-	// as the underlying data
+	// кэшировать страницу в течение того же времени.
+	// как и базовые данные
 	setHeaders({
 		age: response.headers.get('age'),
 		'cache-control': response.headers.get('cache-control')
@@ -402,60 +452,134 @@ export async function load({ fetch, setHeaders }) {
 	return response.json();
 }
 ```
+#### **TypeScript**
+**```src/routes/products/+page.ts```**
+```ts
+import type { PageLoad } from './$types';
+ 
+export const load = (async ({ fetch, setHeaders }) => {
+  const url = `https://cms.example.com/products.json`;
+  const response = await fetch(url);
+ 
+	// кэшировать страницу в течение того же времени.
+	// как и базовые данные
+  setHeaders({
+    age: response.headers.get('age'),
+    'cache-control': response.headers.get('cache-control')
+  });
+ 
+  return response.json();
+}) satisfies PageLoad;
+```
+<!-- tabs:end -->
 
-Setting the same header multiple times (even in separate `load` functions) is an error — you can only set a given header once. You cannot add a `set-cookie` header with `setHeaders` — use `cookies.set(name, value, options)` instead.
+Установка одного и того же заголовка несколько раз (даже в отдельных функциях `load`) является ошибкой - вы можете установить данный заголовок только один раз. Вы не можете добавить заголовок `set-cookie` с помощью `setHeaders` - вместо этого используйте `cookies.set(name, value, options)`.
 
-## Using parent data
+## Использование родительских данных
 
-Occasionally it's useful for a `load` function to access data from a parent `load` function, which can be done with `await parent()`:
+Иногда полезно, чтобы функция `load` получила доступ к данным из родительской функции `load`, что можно сделать с помощью `await parent()`:
 
+<!-- tabs:start -->
+#### **JavaScript**
+**```src/routes/+layout.js```**
 ```js
-/// file: src/routes/+layout.js
 /** @type {import('./$types').LayoutLoad} */
 export function load() {
 	return { a: 1 };
 }
 ```
+#### **TypeScript**
+**```src/routes/+layout.ts```**
+```ts
+import type { LayoutLoad } from './$types';
+ 
+export const load = (() => {
+  return { a: 1 };
+}) satisfies LayoutLoad;
+```
+<!-- tabs:end -->
 
+<!-- tabs:start -->
+#### **JavaScript**
+**```src/routes/abc/+layout.js```**
 ```js
-/// file: src/routes/abc/+layout.js
 /** @type {import('./$types').LayoutLoad} */
 export async function load({ parent }) {
 	const { a } = await parent();
 	return { b: a + 1 };
 }
 ```
+#### **TypeScript**
+**```src/routes/abc/+layout.ts```**
+```ts
+import type { LayoutLoad } from './$types';
+ 
+export const load = (async ({ parent }) => {
+  const { a } = await parent();
+  return { b: a + 1 };
+}) satisfies LayoutLoad;
+```
+<!-- tabs:end -->
 
+<!-- tabs:start -->
+#### **JavaScript**
+**```src/routes/abc/+page.js```**
 ```js
-/// file: src/routes/abc/+page.js
 /** @type {import('./$types').PageLoad} */
 export async function load({ parent }) {
 	const { a, b } = await parent();
 	return { c: a + b };
 }
 ```
+#### **TypeScript**
+**```src/routes/abc/+page.ts```**
+```ts
+import type { PageLoad } from './$types';
+ 
+export const load = (async ({ parent }) => {
+  const { a, b } = await parent();
+  return { c: a + b };
+}) satisfies PageLoad;
+```
+<!-- tabs:end -->
 
+
+<!-- tabs:start -->
+#### **JavaScript**
+**```src/routes/abc/+page.svelte```**
 ```svelte
-/// file: src/routes/abc/+page.svelte
 <script>
 	/** @type {import('./$types').PageData} */
 	export let data;
 </script>
 
-<!-- renders `1 + 2 = 3` -->
+<!-- отображает `1 + 2 = 3` -->
 <p>{data.a} + {data.b} = {data.c}</p>
 ```
+#### **TypeScript**
+**```src/routes/abc/+page.svelte```**
+```svelte
+<script lang="ts">
+  import type { PageData } from './$types';
 
-> Notice that the `load` function in `+page.js` receives the merged data from both layout `load` functions, not just the immediate parent.
+  export let data: PageData;
+</script>
+<!-- отображает `1 + 2 = 3` -->
+<p>{data.a} + {data.b} = {data.c}</p>
+```
+<!-- tabs:end -->
 
-Inside `+page.server.js` and `+layout.server.js`, `parent` returns data from parent `+layout.server.js` files.
 
-In `+page.js` or `+layout.js` it will return data from parent `+layout.js` files. However, a missing `+layout.js` is treated as a `({ data }) => data` function, meaning that it will also return data from parent `+layout.server.js` files that are not 'shadowed' by a `+layout.js` file
+> Обратите внимание, что функция `load` в `+page.js` получает объединенные данные от обеих функций `load` макета, а не только от непосредственного родителя.
 
-Take care not to introduce waterfalls when using `await parent()`. Here, for example, `getData(params)` does not depend on the result of calling `parent()`, so we should call it first to avoid a delayed render.
+Внутри `+page.server.js` и `+layout.server.js`, `parent` возвращает данные из родительских файлов `+layout.server.js`.
 
+В `+page.js` или `+layout.js` он будет возвращать данные из родительских файлов `+layout.js`. Однако отсутствующий `+layout.js` рассматривается как функция `({ data }) => data`, что означает, что она также вернет данные из родительских файлов `+layout.server.js`, которые не "затенены" файлом `+layout.js`.
+
+Будьте осторожны, чтобы не создавать водопады при использовании `await parent()`. Здесь, например, `getData(params)` не зависит от результата вызова `parent()`, поэтому мы должны вызвать его первым, чтобы избежать задержки рендеринга.
+
+**```+page.js```**
 ```diff
-/// file: +page.js
 /** @type {import('./$types').PageLoad} */
 export async function load({ params, parent }) {
 -	const parentData = await parent();
@@ -469,7 +593,7 @@ export async function load({ params, parent }) {
 }
 ```
 
-## Errors
+## Ошибки
 
 If an error is thrown during `load`, the nearest [`+error.svelte`](routing#error) will be rendered. For _expected_ errors, use the `error` helper from `@sveltejs/kit` to specify the HTTP status code and an optional message:
 
@@ -534,7 +658,7 @@ export function load({ locals }) {
 
 In the browser, you can also navigate programmatically outside of a `load` function using [`goto`](modules#$app-navigation-goto) from [`$app.navigation`](modules#$app-navigation).
 
-## Streaming with promises
+## Потоковая передача с промисами
 
 Promises at the _top level_ of the returned object will be awaited, making it easy to return multiple promises without creating a waterfall. When using a server `load`, _nested_ promises will be streamed to the browser as they resolve. This is useful if you have slow, non-essential data, since you can start rendering the page before all the data is available:
 
