@@ -595,11 +595,12 @@ export async function load({ params, parent }) {
 
 ## Ошибки
 
-If an error is thrown during `load`, the nearest [`+error.svelte`](routing#error) will be rendered. For _expected_ errors, use the `error` helper from `@sveltejs/kit` to specify the HTTP status code and an optional message:
+Если во время загрузки (`load`) произошла ошибка, будет выведен ближайший маршрут [`+error.svelte`](/20-core-concepts/10-routing?id=error). Для _ожидаемых_ ошибок используйте помощник `error` из `@sveltejs/kit`, чтобы указать код состояния HTTP и необязательное сообщение:
 
-```js
-/// file: src/routes/admin/+layout.server.js
-// @filename: ambient.d.ts
+<!-- tabs:start -->
+#### **JavaScript**
+**```ambient.d.ts```**
+```ts
 declare namespace App {
 	interface Locals {
 		user?: {
@@ -608,32 +609,62 @@ declare namespace App {
 		}
 	}
 }
-
-// @filename: index.js
-// ---cut---
+```
+**```src/routes/admin/+layout.server.js```**
+```js
 import { error } from '@sveltejs/kit';
 
 /** @type {import('./$types').LayoutServerLoad} */
 export function load({ locals }) {
 	if (!locals.user) {
-		throw error(401, 'not logged in');
+		throw error(401, 'вход не выполнен');
 	}
 
 	if (!locals.user.isAdmin) {
-		throw error(403, 'not an admin');
+		throw error(403, 'не администратор');
 	}
 }
 ```
+#### **TypeScript**
+**```ambient.d.ts```**
+```ts
+declare namespace App {
+	interface Locals {
+		user?: {
+			name: string;
+			isAdmin: boolean;
+		}
+	}
+}
+```
+**```src/routes/admin/+layout.server.ts```**
+```ts
+import { error } from '@sveltejs/kit';
+import type { LayoutServerLoad } from './$types';
+ 
+export const load = (({ locals }) => {
+  if (!locals.user) {
+    throw error(401, 'вход не выполнен');
+  }
+ 
+  if (!locals.user.isAdmin) {
+    throw error(403, 'не администратор');
+  }
+}) satisfies LayoutServerLoad;
+```
+<!-- tabs:end -->
 
-If an _unexpected_ error is thrown, SvelteKit will invoke [`handleError`](hooks#shared-hooks-handleerror) and treat it as a 500 Internal Error.
+Если возникла _неожиданная_ ошибка, SvelteKit вызовет [`handleError`](/30-advanced/20-hooks?id=handleerror) и обработает ее как внутреннюю ошибку 500.
 
-## Redirects
 
-To redirect users, use the `redirect` helper from `@sveltejs/kit` to specify the location to which they should be redirected alongside a `3xx` status code.
+## Перенаправления
 
-```js
-/// file: src/routes/user/+layout.server.js
-// @filename: ambient.d.ts
+Чтобы перенаправить пользователей, используйте помощник `redirect` из `@sveltejs/kit`, чтобы указать место, на которое они должны быть перенаправлены, вместе с кодом статуса `3xx`.
+
+<!-- tabs:start -->
+#### **JavaScript**
+**```ambient.d.ts```**
+```ts
 declare namespace App {
 	interface Locals {
 		user?: {
@@ -641,9 +672,9 @@ declare namespace App {
 		}
 	}
 }
-
-// @filename: index.js
-// ---cut---
+```
+**```src/routes/user/+layout.server.js```**
+```js
 import { redirect } from '@sveltejs/kit';
 
 /** @type {import('./$types').LayoutServerLoad} */
@@ -653,17 +684,42 @@ export function load({ locals }) {
 	}
 }
 ```
+#### **TypeScript**
+**```ambient.d.ts```**
+```ts
+declare namespace App {
+	interface Locals {
+		user?: {
+			name: string;
+		}
+	}
+}
+```
+**```src/routes/user/+layout.server.ts```**
+```ts
+import { redirect } from '@sveltejs/kit';
+import type { LayoutServerLoad } from './$types';
+ 
+export const load = (({ locals }) => {
+  if (!locals.user) {
+    throw redirect(307, '/login');
+  }
+}) satisfies LayoutServerLoad;
+```
+<!-- tabs:end -->
 
-> Make sure you're not catching the thrown redirect, which would prevent SvelteKit from handling it.
+> Убедитесь, что вы не перехватываете брошенное перенаправление, что не позволит SvelteKit обработать его.
 
-In the browser, you can also navigate programmatically outside of a `load` function using [`goto`](modules#$app-navigation-goto) from [`$app.navigation`](modules#$app-navigation).
+В браузере вы также можете осуществлять навигацию программно вне функции `load`, используя [`goto`](/50-reference/30-modules?id=goto) из [`$app.navigation`](/50-reference/30-modules?id=appnavigation).
 
 ## Потоковая передача с промисами
 
-Promises at the _top level_ of the returned object will be awaited, making it easy to return multiple promises without creating a waterfall. When using a server `load`, _nested_ promises will be streamed to the browser as they resolve. This is useful if you have slow, non-essential data, since you can start rendering the page before all the data is available:
+Промисы на _верхнем уровне_ возвращаемого объекта будут ожидаться, что упрощает возврат нескольких промисов без создания водопада. При использовании серверной загрузки (`load`), _вложенные_ промисы будут передаваться в браузер по мере их выполнения. Это полезно, если у вас есть медленные, несущественные данные, так как вы можете начать рендеринг страницы до того, как все данные будут доступны:
 
+<!-- tabs:start -->
+#### **JavaScript**
+**```src/routes/+page.server.js```**
 ```js
-/// file: src/routes/+page.server.js
 /** @type {import('./$types').PageServerLoad} */
 export function load() {
 	return {
@@ -679,26 +735,48 @@ export function load() {
 	};
 }
 ```
+#### **TypeScript**
+**```src/routes/+page.server.ts```**
+```ts
+import type { PageServerLoad } from './$types';
+ 
+export const load = (() => {
+  return {
+    one: Promise.resolve(1),
+    two: Promise.resolve(2),
+    streamed: {
+      three: new Promise((fulfil) => {
+        setTimeout(() => {
+          fulfil(3)
+        }, 1000);
+      })
+    }
+  };
+}) satisfies PageServerLoad;
+```
+<!-- tabs:end -->
 
-This is useful for creating skeleton loading states, for example:
+Это полезно, например, для создания каркасных состояний загрузки:
 
+<!-- tabs:start -->
+#### **JavaScript**
+**```src/routes/+page.svelte```**
 ```svelte
-/// file: src/routes/+page.svelte
 <script>
 	/** @type {import('./$types').PageData} */
 	export let data;
 </script>
 
 <p>
-	one: {data.one}
+	один: {data.one}
 </p>
 <p>
-	two: {data.two}
+	два: {data.two}
 </p>
 <p>
-	three:
+	три:
 	{#await data.streamed.three}
-		Loading...
+		Загрузка...
 	{:then value}
 		{value}
 	{:catch error}
@@ -706,30 +784,58 @@ This is useful for creating skeleton loading states, for example:
 	{/await}
 </p>
 ```
+#### **TypeScript**
+**```src/routes/+page.svelte```**
+```svelte
+<script lang="ts">
+  import type { PageData } from './$types';
 
-On platforms that do not support streaming, such as AWS Lambda, responses will be buffered. This means the page will only render once all promises resolve.
+  export let data: PageData;
+</script>
 
-> Streaming data will only work when JavaScript is enabled. You should avoid returning nested promises from a universal `load` function if the page is server rendered, as these are _not_ streamed — instead, the promise is recreated when the function re-runs in the browser.
+<p>
+	один: {data.one}
+</p>
+<p>
+	два: {data.two}
+</p>
+<p>
+	три:
+	{#await data.streamed.three}
+		Загрузка...
+	{:then value}
+		{value}
+	{:catch error}
+		{error.message}
+	{/await}
+</p>
+```
+<!-- tabs:end -->
 
-## Parallel loading
+На платформах, не поддерживающих потоковую передачу, таких как AWS Lambda, ответы будут буферизироваться. Это означает, что страница будет отображаться только после выполнения всех промисов.
 
-When rendering (or navigating to) a page, SvelteKit runs all `load` functions concurrently, avoiding a waterfall of requests. During client-side navigation, the result of calling multiple server `load` functions are grouped into a single response. Once all `load` functions have returned, the page is rendered.
+> Потоковая передача данных будет работать только при включенном JavaScript. Вам следует избегать возврата вложенных промисов из универсальной функции `load`, если страница рендерится на сервере, поскольку они _не_ передаются потоком - вместо этого промис создается заново при повторном запуске функции в браузере.
 
-## Rerunning load functions
+## Параллельная загрузка
 
-SvelteKit tracks the dependencies of each `load` function to avoid re-running it unnecessarily during navigation.
+При рендеринге (или навигации по странице) SvelteKit запускает все функции `load` одновременно, избегая водопада запросов. Во время навигации на стороне клиента результаты вызова нескольких серверных функций `load` группируются в один ответ. Как только все функции `load` вернутся, страница будет отрисована.
 
-For example, given a pair of `load` functions like these...
+## Повторное выполнение функций загрузки
 
-```js
-/// file: src/routes/blog/[slug]/+page.server.js
-// @filename: ambient.d.ts
+SvelteKit отслеживает зависимости каждой функции `load`, чтобы избежать ее повторного запуска без необходимости во время навигации.
+
+Например, если есть пара таких функций `load` как эти...
+
+<!-- tabs:start -->
+#### **JavaScript**
+**```ambient.d.ts```**
+```ts
 declare module '$lib/server/database' {
 	export function getPost(slug: string): Promise<{ title: string, content: string }>
 }
-
-// @filename: index.js
-// ---cut---
+```
+**```src/routes/blog/[slug]/+page.server.js```**
+```js
 import * as db from '$lib/server/database';
 
 /** @type {import('./$types').PageServerLoad} */
@@ -739,16 +845,36 @@ export async function load({ params }) {
 	};
 }
 ```
+#### **TypeScript**
+**```ambient.d.ts```**
+```ts
+declare module '$lib/server/database' {
+	export function getPost(slug: string): Promise<{ title: string, content: string }>
+}
+```
+**```src/routes/blog/[slug]/+page.server.ts```**
+```ts
+import * as db from '$lib/server/database';
+import type { PageServerLoad } from './$types';
+ 
+export const load = (async ({ params }) => {
+	return {
+		post: await db.getPost(params.slug)
+	};
+}) satisfies PageServerLoad;
+```
+<!-- tabs:end -->
 
-```js
-/// file: src/routes/blog/[slug]/+layout.server.js
-// @filename: ambient.d.ts
+<!-- tabs:start -->
+#### **JavaScript**
+**```ambient.d.ts```**
+```ts
 declare module '$lib/server/database' {
 	export function getPostSummaries(): Promise<Array<{ title: string, slug: string }>>
 }
-
-// @filename: index.js
-// ---cut---
+```
+**```src/routes/blog/[slug]/+layout.server.js```**
+```js
 import * as db from '$lib/server/database';
 
 /** @type {import('./$types').LayoutServerLoad} */
@@ -758,27 +884,48 @@ export async function load() {
 	};
 }
 ```
+#### **TypeScript**
+**```ambient.d.ts```**
+```ts
+declare module '$lib/server/database' {
+	export function getPostSummaries(): Promise<Array<{ title: string, slug: string }>>
+}
+```
+**```src/routes/blog/[slug]/+layout.server.ts```**
+```ts
+import * as db from '$lib/server/database';
+import type { LayoutServerLoad } from './$types';
+ 
+export const load = (async () => {
+	return {
+		posts: await db.getPostSummaries()
+	};
+}) satisfies LayoutServerLoad;
+```
+<!-- tabs:end -->
 
-...the one in `+page.server.js` will re-run if we navigate from `/blog/trying-the-raw-meat-diet` to `/blog/i-regret-my-choices` because `params.slug` has changed. The one in `+layout.server.js` will not, because the data is still valid. In other words, we won't call `db.getPostSummaries()` a second time.
+...та, что в `+page.server.js`, будет запущена заново, если мы перейдем от `/blog/trying-the-raw-meat-diet` к `/blog/i-regret-my-choices`, потому что `params.slug` изменился. А в `+layout.server.js` этого не произойдет, потому что данные все еще действительны. Другими словами, мы не будем вызывать `db.getPostSummaries()` во второй раз.
 
-A `load` function that calls `await parent()` will also re-run if a parent `load` function is re-run.
+Функция `load`, которая вызывает `await parent()`, также будет повторно запущена, если родительская функция `load` будет повторно запущена.
 
-Dependency tracking does not apply _after_ the `load` function has returned — for example, accessing `params.x` inside a nested [promise](#streaming-with-promises) will not cause the function to re-run when `params.x` changes. (Don't worry, you'll get a warning in development if you accidentally do this.) Instead, access the parameter in the main body of your `load` function.
+Отслеживание зависимостей не применяется _после_ возвращения функции `load` - например, обращение к `params.x` внутри вложенного [промиса](/20-core-concepts/20-load?id=Потоковая-передача-с-промисами) не приведет к повторному запуску функции при изменении `params.x`. (Не волнуйтесь, вы получите предупреждение в процессе разработки, если случайно сделаете это). Вместо этого обратитесь к параметру в основном теле вашей функции `load`.
 
-### Manual invalidation
+### Ручная инвалидация
 
-You can also re-run `load` functions that apply to the current page using [`invalidate(url)`](modules#$app-navigation-invalidate), which re-runs all `load` functions that depend on `url`, and [`invalidateAll()`](modules#$app-navigation-invalidateall), which re-runs every `load` function.
+Вы также можете повторно запустить функции `load`, которые применяются к текущей странице, используя функцию [`invalidate(url)`](/50-reference/30-modules?id=invalidate), которая повторно запускает все функции `load`, зависящие от `url`, и функцию [`invalidateAll()`](/50-reference/30-modules?id=invalidateall), которая повторно запускает каждую функцию `load`.
 
-A `load` function depends on `url` if it calls `fetch(url)` or `depends(url)`. Note that `url` can be a custom identifier that starts with `[a-z]:`:
+Функция `load` зависит от `url`, если она вызывает `fetch(url)` или `depends(url)`. Обратите внимание, что `url` может быть пользовательским идентификатором, начинающимся с `[a-z]:`:
 
+<!-- tabs:start -->
+#### **JavaScript**
+**```src/routes/random-number/+page.js```**
 ```js
-/// file: src/routes/random-number/+page.js
 /** @type {import('./$types').PageLoad} */
 export async function load({ fetch, depends }) {
-	// load reruns when `invalidate('https://api.example.com/random-number')` is called...
+	// загрузка перезапускается при вызове `invalidate('https://api.example.com/random-number')`...
 	const response = await fetch('https://api.example.com/random-number');
 
-	// ...or when `invalidate('app:random')` is called
+	// ...или когда вызывается `invalidate('app:random')`
 	depends('app:random');
 
 	return {
@@ -786,9 +933,29 @@ export async function load({ fetch, depends }) {
 	};
 }
 ```
+#### **TypeScript**
+**```src/routes/random-number/+page.ts```**
+```ts
+import type { PageLoad } from './$types';
+ 
+export const load = (async ({ fetch, depends }) => {
+	// загрузка перезапускается при вызове `invalidate('https://api.example.com/random-number')`...
+	const response = await fetch('https://api.example.com/random-number');
 
+	// ...или когда вызывается `invalidate('app:random')`
+	depends('app:random');
+
+	return {
+	number: await response.json()
+	};
+}) satisfies PageLoad;
+```
+<!-- tabs:end -->
+
+<!-- tabs:start -->
+#### **JavaScript**
+**```src/routes/random-number/+page.svelte```**
 ```svelte
-/// file: src/routes/random-number/+page.svelte
 <script>
 	import { invalidate, invalidateAll } from '$app/navigation';
 
@@ -796,7 +963,7 @@ export async function load({ fetch, depends }) {
 	export let data;
 
 	function rerunLoadFunction() {
-		// any of these will cause the `load` function to re-run
+		// любое из них приведет к повторному запуску функции `load`.
 		invalidate('app:random');
 		invalidate('https://api.example.com/random-number');
 		invalidate(url => url.href.includes('random-number'));
@@ -804,24 +971,47 @@ export async function load({ fetch, depends }) {
 	}
 </script>
 
-<p>random number: {data.number}</p>
-<button on:click={rerunLoadFunction}>Update random number</button>
+<p>случайное число: {data.number}</p>
+<button on:click={rerunLoadFunction}>Обновить случайное число</button>
 ```
+#### **TypeScript**
+**```src/routes/random-number/+page.svelte```**
+```svelte
+<script lang="ts">
+	import { invalidate, invalidateAll } from '$app/navigation';
 
-To summarize, a `load` function will re-run in the following situations:
+	import type { PageData } from './$types';
 
-- It references a property of `params` whose value has changed
-- It references a property of `url` (such as `url.pathname` or `url.search`) whose value has changed
-- It calls `await parent()` and a parent `load` function re-ran
-- It declared a dependency on a specific URL via [`fetch`](#making-fetch-requests) or [`depends`](types#public-types-loadevent), and that URL was marked invalid with [`invalidate(url)`](modules#$app-navigation-invalidate)
-- All active `load` functions were forcibly re-run with [`invalidateAll()`](modules#$app-navigation-invalidateall)
+	export let data: PageData;
 
-`params` and `url` can change in response to a `<a href="..">` link click, a [`<form>` interaction](form-actions#get-vs-post), a [`goto`](modules#$app-navigation-goto) invocation, or a [`redirect`](modules#sveltejs-kit-redirect).
+	function rerunLoadFunction() {
+		// любое из них приведет к повторному запуску функции `load`.
+		invalidate('app:random');
+		invalidate('https://api.example.com/random-number');
+		invalidate(url => url.href.includes('random-number'));
+		invalidateAll();
+	}
+</script>
 
-Note that re-running a `load` function will update the `data` prop inside the corresponding `+layout.svelte` or `+page.svelte`; it does _not_ cause the component to be recreated. As a result, internal state is preserved. If this isn't what you want, you can reset whatever you need to reset inside an [`afterNavigate`](modules#$app-navigation-afternavigate) callback, and/or wrap your component in a [`{#key ...}`](https://svelte.dev/docs#template-syntax-key) block.
+<p>случайное число: {data.number}</p>
+<button on:click={rerunLoadFunction}>Обновить случайное число</button>
+```
+<!-- tabs:end -->
 
-## Further reading
+Подводя итог, можно сказать, что функция `load` будет повторно запущена в следующих ситуациях:
 
-- [Tutorial: Loading data](https://learn.svelte.dev/tutorial/page-data)
-- [Tutorial: Errors and redirects](https://learn.svelte.dev/tutorial/error-basics)
-- [Tutorial: Advanced loading](https://learn.svelte.dev/tutorial/await-parent)
+- Она ссылается на свойство `params`, значение которого изменилось
+- Она ссылается на свойство `url` (например, `url.pathname` или `url.search`), значение которого изменилось
+- Вызывается `await parent()` и повторно запускается родительская функция `load`
+- Объявлена зависимость от определенного URL через [`fetch`](/20-core-concepts/20-load?id=Выполнение-fetch-запросов) или [`depends`](/50-reference/40-types?id=loadevent), и этот URL был помечен недействительным с помощью [`invalidate(url)`](/50-reference/30-modules?id=invalidate)
+- Все активные функции `load` были принудительно перезапущены с помощью [`invalidateAll()`](/50-reference/30-modules?id=invalidateall)
+
+`params` и `url` могут изменяться в ответ на клик по ссылке `<a href="...">`, взаимодействие [`<form>`](/20-core-concepts/30-form-actions?id=get-против-post), вызов [`goto`](/50-reference/30-modules?id=goto) или [`redirect`](/50-reference/30-modules?id=redirect).
+
+Обратите внимание, что повторный запуск функции `load` обновляет реквизит `data` внутри соответствующего `+layout.svelte` или `+page.svelte`; это _не_ приводит к повторному созданию компонента. В результате внутреннее состояние сохраняется. Если это не то, что вам нужно, вы можете сбросить все, что вам нужно сбросить, внутри обратного вызова [`afterNavigate`](/50-reference/30-modules?id=afternavigate), и/или обернуть ваш компонент в блок [`{#key ...}`](https://romkar.github.io/svelte-docs-rus/#/docs/03-template-syntax?id=key-).
+
+## Дальнейшее чтение
+
+- [Учебник: Загрузка данных](https://learn.svelte.dev/tutorial/page-data)
+- [Учебник: Ошибки и переадресации](https://learn.svelte.dev/tutorial/error-basics)
+- [Учебник: Расширенная загрузка](https://learn.svelte.dev/tutorial/await-parent)

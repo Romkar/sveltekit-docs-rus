@@ -8,6 +8,13 @@ SvelteKit делает ряд модулей доступными для ваш�
 ---
 ## $app/navigation
 
+### afterNavigate
+
+### goto
+
+### invalidate
+
+### invalidateAll
 
 ---
 ## $app/stores

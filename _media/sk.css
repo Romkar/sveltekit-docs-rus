@@ -892,3 +892,13 @@ code .token {
 img[alt="icon_docsify"]{
     width: 50px;
 }
+
+@media only screen and (max-width: 900px) {
+    #main {
+        margin: 0;
+    }
+       
+    .markdown-section {
+        max-width: 100%;
+    }
+}

@@ -132,7 +132,7 @@ export function handleFetch({ event, request, fetch }) {
 }
 ```
 
-## Shared hooks
+## Общие хуки
 
 The following can be added to `src/hooks.server.js` _and_ `src/hooks.client.js`:
 

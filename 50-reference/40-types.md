@@ -7,6 +7,9 @@ The following types can be imported from `@sveltejs/kit`:
 
 > TYPES: @sveltejs/kit
 
+### LoadEvent
+
+
 ## Private types
 
 The following are referenced by the public types documented above, but cannot be imported directly:

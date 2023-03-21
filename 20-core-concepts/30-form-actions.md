@@ -480,7 +480,7 @@ export function POST() {
 }
 ```
 
-## GET vs POST
+## GET против POST
 
 As we've seen, to invoke a form action you must use `method="POST"`.
 
