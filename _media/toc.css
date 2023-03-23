@@ -23,6 +23,19 @@ aside.nav.nothing {
   border-left-color: rgba(0, 0, 0, 0.07);
   border-image-slice: 1;
   padding-left: 5px;
+
+  overflow-y: scroll;
+  height: 90%;
+}
+
+.page_toc::-webkit-scrollbar {
+  width: 2px;
+}
+.page_toc::-webkit-scrollbar-track {
+  background-color: white;
+}
+.page_toc::-webkit-scrollbar-thumb {
+  background-color: #FF9775;
 }
 
 .page_toc code {

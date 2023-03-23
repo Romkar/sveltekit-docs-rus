@@ -55,6 +55,7 @@
           placeholder: {
             '/': 'Поиск',
           },
+          namespace: 'sveltekit',
       },
       pagination: {
         previousText: 'Назад',
@@ -82,12 +83,12 @@
                 editHtml + html
               );
             });
-            hook.ready(function () {
+            hook.doneEach(function () {
                 /// https://github.com/docsifyjs/docsify/issues/351
                 // true = show debug log
                 let dd = false 
                 let TARGET_QUERY = 'id'
-                let SCROLL_DELAY = 1000 // in milisecond
+                let SCROLL_DELAY = 2000 // in milisecond
                 let location = window.location
 
                 dd&&console.log('custom scroll plugin called!')

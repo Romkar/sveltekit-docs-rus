@@ -2,7 +2,7 @@
 
 |![icon](_media/favicon.png)|
 |--|
-![logo](_media/sk.png)
+![logo](_media/sveltekit.webp)
 
 # Русская документация SvelteKit
 

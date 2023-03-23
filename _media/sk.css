@@ -902,8 +902,3 @@ img[alt="icon_docsify"]{
         max-width: 100%;
     }
 }
-
-.page_toc{
-    overflow: scroll;
-    height: 90%;
-}
