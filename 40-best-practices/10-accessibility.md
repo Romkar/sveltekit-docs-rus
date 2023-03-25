@@ -24,7 +24,7 @@ Because of this behavior, every page in your app should have a unique, descripti
 
 This will allow screen readers and other assistive technology to identify the new page after a navigation occurs. Providing a descriptive title is also important for [SEO](seo#manual-setup-title-and-meta).
 
-## Focus management
+## Управление фокусом
 
 In traditional server-rendered applications, every navigation will reset focus to the top of the page. This ensures that people browsing the web with a keyboard or screen reader will start interacting with the page from the beginning.
 

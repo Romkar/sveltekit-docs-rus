@@ -1,9 +1,11 @@
 # Параметры ссылок
 ---
 
-In SvelteKit, `<a>` elements (rather than framework-specific `<Link>` components) are used to navigate between the routes of your app. If the user clicks on a link whose `href` is 'owned' by the app (as opposed to, say, a link to an external site) then SvelteKit will navigate to the new page by importing its code and then calling any `load` functions it needs to fetch data.
+В SvelteKit элементы `<a>` (а не специфические для фреймворка компоненты `<Link>`) используются для навигации между маршрутами вашего приложения. Если пользователь нажимает на ссылку, `href` которая "принадлежит" приложению (в отличие, например, от ссылки на внешний сайт), SvelteKit переходит на новую страницу, импортируя ее код и вызывая все функции `load`, необходимые для получения данных.
 
-You can customise the behaviour of links with `data-sveltekit-*` attributes. These can be applied to the `<a>` itself, or to a parent element.
+Вы можете настроить поведение ссылок с помощью атрибутов `data-sveltekit-*`. Они могут быть применены к самому элементу `<a>` или к родительскому элементу.
+
+Эти опции также применяются к элементам `<form>` с `method="GET"`.
 
 ## data-sveltekit-preload-data
 
@@ -64,6 +66,28 @@ Occasionally, we need to tell SvelteKit not to handle a link, but allow the brow
 ...will cause a full-page navigation when the link is clicked.
 
 Links with a `rel="external"` attribute will receive the same treatment. In addition, they will be ignored during [prerendering](page-options#prerender).
+
+## data-sveltekit-replacestate
+
+Sometimes you don't want navigation to create a new entry in the browser's session history. Adding a `data-sveltekit-replacestate` attribute to a link...
+
+```html
+<a data-sveltekit-replacestate href="/path">Path</a>
+```
+
+...will replace the current `history` entry rather than creating a new one with `pushState` when the link is clicked.
+
+## data-sveltekit-keepfocus
+
+Sometimes you don't want [focus to be reset](/docs/accessibility#focus-management) after navigation. For example, maybe you have a search form that submits as the user is typing, and you want to keep focus on the text input.  Adding a `data-sveltekit-keepfocus` attribute to it...
+
+```html
+<form data-sveltekit-keepfocus>
+	<input type="text" name="query">
+</form>
+```
+
+...will cause the currently focused element to retain focus after navigation. In general, avoid using this attribute on links, since the focused element would be the `<a>` tag (and not a previously focused element) and screen reader and other assistive technology users often expect focus to be moved after a navigation. You should also only use this attribute on elements that still exist after navigation. If the element no longer exists, the user's focus will be lost, making for a confusing experience for assistive technology users.
 
 ## data-sveltekit-noscroll
 

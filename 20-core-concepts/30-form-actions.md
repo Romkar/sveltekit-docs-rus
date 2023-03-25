@@ -1,28 +1,42 @@
 # Действия формы
 ---
 
-A `+page.server.js` file can export _actions_, which allow you to `POST` data to the server using the `<form>` element.
+Файл `+page.server.js` может экспортировать _действия_, которые позволяют вам отправлять `POST` данные на сервер с помощью элемента `<form>`.
 
-When using `<form>`, client-side JavaScript is optional, but you can easily _progressively enhance_ your form interactions with JavaScript to provide the best user experience.
+При использовании `<form>`, JavaScript на стороне клиента необязателен, но вы можете легко _прогрессивно улучшить_ взаимодействие с формой с помощью JavaScript для обеспечения наилучшего пользовательского опыта.
 
-## Default actions
+## Действия по умолчанию
 
-In the simplest case, a page declares a `default` action:
+В простейшем случае страница объявляет действие `default`:
 
+<!-- tabs:start -->
+#### **JavaScript**
+**```src/routes/login/+page.server.js```**
 ```js
-/// file: src/routes/login/+page.server.js
 /** @type {import('./$types').Actions} */
 export const actions = {
 	default: async (event) => {
-		// TODO log the user in
+		// СДЕЛАТЬ: вход пользователя в систему
 	}
 };
 ```
+#### **TypeScript**
+**```src/routes/login/+page.server.ts```**
+```ts
+import type { Actions } from './$types';
+ 
+export const actions = {
+	default: async (event) => {
+		// СДЕЛАТЬ: вход пользователя в систему
+	}
+} satisfies Actions;
+```
+<!-- tabs:end -->
 
-To invoke this action from the `/login` page, just add a `<form>` — no JavaScript needed:
+Чтобы вызвать это действие со страницы `/login`, просто добавьте `<form>` - JavaScript не нужен:
 
+**```src/routes/login/+page.svelte```**
 ```svelte
-/// file: src/routes/login/+page.svelte
 <form method="POST">
 	<label>
 		Email
@@ -36,77 +50,78 @@ To invoke this action from the `/login` page, just add a `<form>` — no JavaScr
 </form>
 ```
 
-If someone were to click the button, the browser would send the form data via `POST` request to the server, running the default action.
+Если кто-то нажмет на кнопку, браузер отправит данные формы через `POST` запрос на сервер, запустив действие по умолчанию.
 
-> Actions always use `POST` requests, since `GET` requests should never have side-effects.
+> Действия всегда используют `POST` запросы, так как `GET` запросы никогда не должны иметь побочных эффектов.
 
-We can also invoke the action from other pages (for example if there's a login widget in the nav in the root layout) by adding the `action` attribute, pointing to the page:
+Мы также можем вызвать действие с других страниц (например, если есть виджет входа в панели навигации в корневом макете), добавив атрибут `action`, указывающий на страницу:
 
+**```src/routes/+layout.svelte```**
 ```html
-/// file: src/routes/+layout.svelte
 <form method="POST" action="/login">
-	<!-- content -->
+	<!-- содержимое -->
 </form>
 ```
 
-## Named actions
+## Именованные действия
 
-Instead of one `default` action, a page can have as many named actions as it needs:
+Вместо одного действия `default`, страница может иметь столько именованных действий, сколько ей необходимо:
 
+**```src/routes/login/+page.server.js```**
 ```diff
-/// file: src/routes/login/+page.server.js
 /** @type {import('./$types').Actions} */
 export const actions = {
 -	default: async (event) => {
 +	login: async (event) => {
-		// TODO log the user in
+		// СДЕЛАТЬ: вход пользователя в систему
 	},
 +	register: async (event) => {
-+		// TODO register the user
++		// СДЕЛАТЬ: регистрацию пользователя
 +	}
 };
 ```
 
-To invoke a named action, add a query parameter with the name prefixed by a `/` character:
+Чтобы вызвать именованное действие, добавьте параметр запроса с именем, с префиксным символом `/`:
 
+**```src/routes/login/+page.svelte```**
 ```svelte
-/// file: src/routes/login/+page.svelte
 <form method="POST" action="?/register">
 ```
 
+**```src/routes/+layout.svelte```**
 ```svelte
-/// file: src/routes/+layout.svelte
 <form method="POST" action="/login?/register">
 ```
 
-As well as the `action` attribute, we can use the `formaction` attribute on a button to `POST` the same form data to a different action than the parent `<form>`:
+Наряду с атрибутом `action`, мы можем использовать атрибут `formaction` на кнопке, чтобы те же данные формы передавались методом `POST` в действие, отличное от родительского `<form>`:
 
+**```src/routes/login/+page.svelte```**
 ```diff
-/// file: src/routes/login/+page.svelte
 -<form method="POST">
 +<form method="POST" action="?/login">
 	<label>
-		Email
+		Электронная почта
 		<input name="email" type="email">
 	</label>
 	<label>
-		Password
+		Пароль
 		<input name="password" type="password">
 	</label>
-	<button>Log in</button>
+	<button>Войти</button>
 +	<button formaction="?/register">Register</button>
-</form>
+ </form>
 ```
 
-> We can't have default actions next to named actions, because if you POST to a named action without a redirect, the query parameter is persisted in the URL, which means the next default POST would go through the named action from before.
+> Мы не можем иметь действия по умолчанию рядом с именованными действиями, потому что если вы передадите методом POST на именованное действие без перенаправления, параметр запроса сохраняется в URL, что означает, что следующий POST по умолчанию будет проходить через предыдущее именованное действие.
 
-## Anatomy of an action
+## Анатомия действия
 
-Each action receives a `RequestEvent` object, allowing you to read the data with `request.formData()`. After processing the request (for example, logging the user in by setting a cookie), the action can respond with data that will be available through the `form` property on the corresponding page and through `$page.form` app-wide until the next update.
+Каждое действие получает объект `RequestEvent`, позволяя вам читать данные с помощью `request.formData()`. После обработки запроса (например, регистрации пользователя путем установки cookie), действие может ответить данными, которые будут доступны через свойство `form` на соответствующей странице и через `$page.form` в масштабах всего приложения до следующего обновления.
 
+<!-- tabs:start -->
+#### **JavaScript**
+**```src/routes/login/+page.server.js```**
 ```js
-// @errors: 2304
-/// file: src/routes/login/+page.server.js
 /** @type {import('./$types').PageServerLoad} */
 export async function load({ cookies }) {
 	const user = await db.getUserFromSession(cookies.get('sessionid'));
@@ -126,13 +141,43 @@ export const actions = {
 		return { success: true };
 	},
 	register: async (event) => {
-		// TODO register the user
+		// СДЕЛАТЬ: регистрацию пользователя
 	}
 };
 ```
+#### **TypeScript**
+**```src/routes/login/+page.server.ts```**
+```ts
+import type { PageServerLoad, Actions } from './$types';
+ 
+export const load = (async ({ cookies }) => {
+  const user = await db.getUserFromSession(cookies.get('sessionid'));
+  return { user };
+}) satisfies PageServerLoad;
+ 
+export const actions = {
+	login: async ({ cookies, request }) => {
+		const data = await request.formData();
+		const email = data.get('email');
+		const password = data.get('password');
 
+		const user = await db.getUser(email);
+		cookies.set('sessionid', await db.createSession(user));
+
+		return { success: true };
+	},
+	register: async (event) => {
+		// СДЕЛАТЬ: регистрацию пользователя
+	}
+} satisfies Actions;
+```
+<!-- tabs:end -->
+
+
+<!-- tabs:start -->
+#### **JavaScript**
+**```src/routes/login/+page.svelte```**
 ```svelte
-/// file: src/routes/login/+page.svelte
 <script>
 	/** @type {import('./$types').PageData} */
 	export let data;
@@ -142,18 +187,36 @@ export const actions = {
 </script>
 
 {#if form?.success}
-	<!-- this message is ephemeral; it exists because the page was rendered in
-	       response to a form submission. it will vanish if the user reloads -->
-	<p>Successfully logged in! Welcome back, {data.user.name}</p>
+	<!-- это сообщение является эфемерным; оно существует, потому что страница была отображена в
+		 в ответ на отправку формы. оно исчезнет, если пользователь перезагрузит страницу. -->
+	<p>Успешный вход в систему! С возвращением, {data.user.name}</p>
 {/if}
 ```
+#### **TypeScript**
+**```src/routes/login/+page.svelte```**
+```svelte
+<script lang="ts">
+  import type { PageData, ActionData } from './$types';
 
-### Validation errors
+  export let data: PageData;
 
-If the request couldn't be processed because of invalid data, you can return validation errors — along with the previously submitted form values — back to the user so that they can try again. The `fail` function lets you return an HTTP status code (typically 400 or 422, in the case of validation errors) along with the data. The status code is available through `$page.status` and the data through `form`:
+  export let form: ActionData;
+</script>
 
+{#if form?.success}
+	<!-- это сообщение является эфемерным; оно существует, потому что страница была отображена в
+		 в ответ на отправку формы. оно исчезнет, если пользователь перезагрузит страницу. -->
+	<p>Успешный вход в систему! С возвращением, {data.user.name}</p>
+{/if}
+```
+<!-- tabs:end -->
+
+### Ошибки валидации
+
+Если запрос не может быть обработан из-за недопустимых данных, вы можете вернуть ошибки валидации вместе с ранее отправленными значениями формы обратно пользователю, чтобы он мог повторить попытку. Функция `fail` позволяет вернуть код состояния HTTP (обычно 400 или 422, в случае ошибок валидации) вместе с данными. Код состояния доступен через `$page.status`, а данные - через `form`:
+
+**```src/routes/login/+page.server.js```**
 ```diff
-/// file: src/routes/login/+page.server.js
 +import { fail } from '@sveltejs/kit';
 
 /** @type {import('./$types').Actions} */
@@ -178,16 +241,16 @@ export const actions = {
 		return { success: true };
 	},
 	register: async (event) => {
-		// TODO register the user
+		// СДЕЛАТЬ: регистрацию пользователя
 	}
 };
 ```
 
-> Note that as a precaution, we only return the email back to the page — not the password.
+> Обратите внимание, что в качестве меры предосторожности мы возвращаем на страницу только электронное письмо, а не пароль.
 
+**```src/routes/login/+page.svelte```**
 ```diff
-/// file: src/routes/login/+page.svelte
-<form method="POST" action="?/login">
+ <form method="POST" action="?/login">
 +	{#if form?.missing}<p class="error">The email field is required</p>{/if}
 +	{#if form?.incorrect}<p class="error">Invalid credentials!</p>{/if}
 	<label>
@@ -196,22 +259,22 @@ export const actions = {
 +		<input name="email" type="email" value={form?.email ?? ''}>
 	</label>
 	<label>
-		Password
+		Пароль
 		<input name="password" type="password">
 	</label>
-	<button>Log in</button>
-	<button formaction="?/register">Register</button>
-</form>
+	<button>Войти</button>
+	<button formaction="?/register">Регистрация</button>
+ </form>
 ```
 
-The returned data must be serializable as JSON. Beyond that, the structure is entirely up to you. For example, if you had multiple forms on the page, you could distinguish which `<form>` the returned `form` data referred to with an `id` property or similar.
+Возвращаемые данные должны быть сериализуемы как JSON. В остальном структура зависит только от вас. Например, если у вас на странице несколько форм, вы можете различать, на какую `<form>` ссылаются возвращаемые `form` данные с помощью свойства `id` или аналогичного.
 
-### Redirects
+### Перенаправления
 
-Redirects (and errors) work exactly the same as in [`load`](load#redirects):
+Перенаправления (и ошибки) работают точно так же, как и в функции [`load`](/20-core-concepts/20-load?id=Перенаправления):
 
+**```src/routes/login/+page.server.js```**
 ```diff
-/// file: src/routes/login/+page.server.js
 +import { fail, redirect } from '@sveltejs/kit';
 
 /** @type {import('./$types').Actions} */
@@ -239,20 +302,21 @@ export const actions = {
 		return { success: true };
 	},
 	register: async (event) => {
-		// TODO register the user
+		// СДЕЛАТЬ: регистрацию пользователя
 	}
 };
 ```
 
-## Loading data
+## Загрузка данных
 
-After an action runs, the page will be re-rendered (unless a redirect or an unexpected error occurs), with the action's return value available to the page as the `form` prop. This means that your page's `load` functions will run after the action completes.
+После выполнения действия страница будет перезагружена (если не произойдет перенаправления или непредвиденной ошибки), а возвращаемое значение действия будет доступно странице в качестве реквизита `form`. Это означает, что функции `load` вашей страницы будут выполняться после завершения действия.
 
-Note that `handle` runs before the action is invoked, and does not re-run before the `load` functions. This means that if, for example, you use `handle` to populate `event.locals` based on a cookie, you must update `event.locals` when you set or delete the cookie in an action:
+Обратите внимание, что функция `handle` выполняется до вызова действия и не запускается повторно перед функциями `load`. Это означает, что если, например, вы используете `handle` для заполнения `event.locals` на основе cookie, вы должны обновить `event.locals` при установке или удалении cookie в действии:
 
-```js
-/// file: src/hooks.server.js
-// @filename: ambient.d.ts
+<!-- tabs:start -->
+#### **JavaScript**
+**```ambient.d.ts```**
+```ts
 declare namespace App {
 	interface Locals {
 		user: {
@@ -260,8 +324,9 @@ declare namespace App {
 		} | null
 	}
 }
-
-// @filename: global.d.ts
+```
+**```global.d.ts```**
+```ts
 declare global {
 	function getUser(sessionid: string | undefined): {
 		name: string;
@@ -269,19 +334,18 @@ declare global {
 }
 
 export {};
-
-// @filename: index.js
-// ---cut---
+```
+**```src/hooks.server.js```**
+```js
 /** @type {import('@sveltejs/kit').Handle} */
 export async function handle({ event, resolve }) {
 	event.locals.user = await getUser(event.cookies.get('sessionid'));
 	return resolve(event);
 }
 ```
-
-```js
-/// file: src/routes/account/+page.server.js
-// @filename: ambient.d.ts
+#### **TypeScript**
+**```ambient.d.ts```**
+```ts
 declare namespace App {
 	interface Locals {
 		user: {
@@ -289,9 +353,42 @@ declare namespace App {
 		} | null
 	}
 }
+```
+**```global.d.ts```**
+```ts
+declare global {
+	function getUser(sessionid: string | undefined): {
+		name: string;
+	};
+}
 
-// @filename: index.js
-// ---cut---
+export {};
+```
+**```src/hooks.server.ts```**
+```ts
+import type { Handle } from '@sveltejs/kit';
+ 
+export const handle = (async ({ event, resolve }) => {
+  event.locals.user = await getUser(event.cookies.get('sessionid'));
+  return resolve(event);
+}) satisfies Handle;
+```
+<!-- tabs:end -->
+
+<!-- tabs:start -->
+#### **JavaScript**
+**```ambient.d.ts```**
+```ts
+declare namespace App {
+	interface Locals {
+		user: {
+			name: string;
+		} | null
+	}
+}
+```
+**```src/routes/account/+page.server.js```**
+```js
 /** @type {import('./$types').PageServerLoad} */
 export function load(event) {
 	return {
@@ -307,81 +404,112 @@ export const actions = {
 	}
 };
 ```
+#### **TypeScript**
+**```ambient.d.ts```**
+```ts
+declare namespace App {
+	interface Locals {
+		user: {
+			name: string;
+		} | null
+	}
+}
+```
+**```src/routes/account/+page.server.ts```**
+```ts
+import type { PageServerLoad, Actions } from './$types';
+ 
+export const load = ((event) => {
+  return {
+    user: event.locals.user
+  };
+}) satisfies PageServerLoad;
+ 
+export const actions = {
+  logout: async (event) => {
+    event.cookies.delete('sessionid');
+    event.locals.user = null;
+  }
+} satisfies Actions;
+```
+<!-- tabs:end -->
 
-## Progressive enhancement
+## Прогрессивное улучшение
 
-In the preceding sections we built a `/login` action that [works without client-side JavaScript](https://kryogenix.org/code/browser/everyonehasjs.html) — not a `fetch` in sight. That's great, but when JavaScript _is_ available we can progressively enhance our form interactions to provide a better user experience.
+В предыдущих разделах мы создали действие `/login`, которое [работает без JavaScript на стороне клиента](https://kryogenix.org/code/browser/everyonehasjs.html) - ни одного `fetch` в поле зрения. Это замечательно, но когда JavaScript _есть_, мы можем постепенно улучшать взаимодействие с формой, чтобы обеспечить лучший пользовательский опыт.
 
 ### use:enhance
 
-The easiest way to progressively enhance a form is to add the `use:enhance` action:
+Самый простой способ постепенного улучшения формы - добавить действие `use:enhance`:
 
+**```src/routes/login/+page.svelte```**
 ```diff
-/// file: src/routes/login/+page.svelte
-<script>
+ <script>
 +	import { enhance } from '$app/forms';
 
 	/** @type {import('./$types').ActionData} */
 	export let form;
-</script>
+ </script>
 
 +<form method="POST" use:enhance>
 ```
 
-> Yes, it's a little confusing that the `enhance` action and `<form action>` are both called 'action'. These docs are action-packed. Sorry.
+> Да, немного смущает, что действие `enhance` и `<form action>` оба называются "action". В этой документации много действий. Извините.
 
-Without an argument, `use:enhance` will emulate the browser-native behaviour, just without the full-page reloads. It will:
+Без аргумента `use:enhance` будет эмулировать нативное поведение браузера, только без перезагрузки всей страницы. Это будет:
 
-- update the `form` property, `$page.form` and `$page.status` on a successful or invalid response, but only if the action is on the same page you're submitting from. So for example if your form looks like `<form action="/somewhere/else" ..>`, `form` and `$page` will _not_ be updated. This is because in the native form submission case you would be redirected to the page the action is on. If you want to have them updated either way, use [`applyAction`](#progressive-enhancement-applyaction)
-- reset the `<form>` element and invalidate all data using `invalidateAll` on a successful response
-- call `goto` on a redirect response
-- render the nearest `+error` boundary if an error occurs
-- [reset focus](accessibility#focus-management) to the appropriate element
+- обновление свойства `form`, `$page.form` и `$page.status` при успешном или недействительном ответе, но только если действие происходит на той же странице, с которой вы отправляете запрос. Так, например, если ваша форма выглядит как `<form action="/somewhere/else" ..>`, `form` и `$page` _не_ будут обновлены. Это происходит потому, что в случае с обычной формой вы будете перенаправлены на страницу, на которой происходит действие. Если вы хотите, чтобы они обновлялись в любом случае, используйте [`applyAction`](/20-core-concepts/30-form-actions?id=applyaction)
+- сброс элемента `<form>` и аннулирование всех данных с помощью `invalidateAll` при успешном ответе
+- вызов `goto` при перенаправлении ответа
+- вывод ближайшей границы `+error` при возникновении ошибки
+- [сброс фокуса](/40-best-practices/10-accessibility?id=Управление-фокусом) на соответствующем элементе
 
-To customise the behaviour, you can provide a `SubmitFunction` that runs immediately before the form is submitted, and (optionally) returns a callback that runs with the `ActionResult`. Note that if you return a callback, the default behavior mentioned above is not triggered. To get it back, call `update`.
+Чтобы настроить поведение, вы можете предоставить `SubmitFunction`, которая запускается непосредственно перед отправкой формы и (опционально) возвращает колбэк, который запускается вместе с `ActionResult`. Обратите внимание, что если вы возвращаете колбэк, то упомянутое выше поведение по умолчанию не срабатывает. Чтобы вернуть его, вызовите `update`.
 
-```svelte
+```html
 <form
 	method="POST"
-	use:enhance={({ form, data, action, cancel }) => {
-		// `form` is the `<form>` element
-		// `data` is its `FormData` object
-		// `action` is the URL to which the form is posted
-		// `cancel()` will prevent the submission
+	use:enhance={({ form, data, action, cancel, submitter }) => {
+		// `form` - это элемент `<form>`
+		// `data` - это объект `FormData`
+		// `action` - это URL, на который отправляется форма
+		// `cancel()` предотвратит отправку
+		// `submitter` - это `HTMLElement`, который вызвал отправку формы
 
 		return async ({ result, update }) => {
-			// `result` is an `ActionResult` object
-			// `update` is a function which triggers the logic that would be triggered if this callback wasn't set
+			// `result` - это объект `ActionResult`
+			// `update` - это функция, которая запускает логику, которая была бы запущена, если бы этот колбэк не был установлен
 		};
 	}}
 >
 ```
 
-You can use these functions to show and hide loading UI, and so on.
+Вы можете использовать эти функции для показа и скрытия пользовательского интерфейса загрузки и так далее.
 
 ### applyAction
 
-If you provide your own callbacks, you may need to reproduce part of the default `use:enhance` behaviour, such as showing the nearest `+error` boundary. Most of the time, calling `update` passed to the callback is enough. If you need more customization you can do so with `applyAction`:
+Если вы предоставляете собственные колбэки, вам может понадобиться воспроизвести часть поведения `use:enhance` по умолчанию, например, показать ближайшую границу `+error`. В большинстве случаев достаточно вызвать `update`, переданный колбэку. Если вам нужно больше настроек, вы можете сделать это с помощью `applyAction`:
 
+**```src/routes/login/+page.svelte```**
 ```diff
-/// file: src/routes/login/+page.svelte
-<script>
+ <script>
 +	import { enhance, applyAction } from '$app/forms';
 
 	/** @type {import('./$types').ActionData} */
 	export let form;
-</script>
+ </script>
 
-<form
+ <form
 	method="POST"
-	use:enhance={({ form, data, action, cancel }) => {
-		// `form` is the `<form>` element
-		// `data` is its `FormData` object
-		// `action` is the URL to which the form is posted
-		// `cancel()` will prevent the submission
+	use:enhance={({ form, data, action, cancel, submitter }) => {
+		// `form` - это элемент `<form>`
+		// `data` - это объект `FormData`
+		// `action` - это URL, на который отправляется форма
+		// `cancel()` предотвратит отправку
+		// `submitter` - это `HTMLElement`, который вызвал отправку формы
 
 		return async ({ result }) => {
-			// `result` is an `ActionResult` object
+			// `result` - это объект `ActionResult`
 +			if (result.type === 'error') {
 +				await applyAction(result);
 +			}
@@ -390,20 +518,22 @@ If you provide your own callbacks, you may need to reproduce part of the default
 >
 ```
 
-The behaviour of `applyAction(result)` depends on `result.type`:
+Поведение `applyAction(result)` зависит от `result.type`:
 
-- `success`, `failure` — sets `$page.status` to `result.status` and updates `form` and `$page.form` to `result.data` (regardless of where you are submitting from, in contrast to `update` from `enhance`)
-- `redirect` — calls `goto(result.location)`
-- `error` — renders the nearest `+error` boundary with `result.error`
+- `success`, `failure` — устанавливает `$page.status` в `result.status` и обновляет `form` и `$page.form` в `result.data` (независимо от того, откуда вы отправляете, в отличие от `update` из `enhance`)
+- `redirect` — вызывает `goto(result.location)`.
+- `error` — отображает ближайшую границу `+error` с `result.error`.
 
-In all cases, [focus will be reset](accessibility#focus-management).
+Во всех случаях, [фокус будет сброшен](/40-best-practices/10-accessibility?id=Управление-фокусом).
 
-### Custom event listener
+### Пользовательский прослушиватель событий
 
-We can also implement progressive enhancement ourselves, without `use:enhance`, with a normal event listener on the `<form>`:
+Мы также можем реализовать прогрессивное улучшение самостоятельно, без `use:enhance`, с помощью обычного слушателя событий на `<form>`:
 
+<!-- tabs:start -->
+#### **JavaScript**
+**```src/routes/login/+page.svelte```**
 ```svelte
-/// file: src/routes/login/+page.svelte
 <script>
 	import { invalidateAll, goto } from '$app/navigation';
 	import { applyAction, deserialize } from '$app/forms';
@@ -426,7 +556,7 @@ We can also implement progressive enhancement ourselves, without `use:enhance`, 
 		const result = deserialize(await response.text());
 
 		if (result.type === 'success') {
-			// re-run all `load` functions, following the successful update
+			// повторно запустить все функции `load` после успешного обновления
 			await invalidateAll();
 		}
 
@@ -435,13 +565,51 @@ We can also implement progressive enhancement ourselves, without `use:enhance`, 
 </script>
 
 <form method="POST" on:submit|preventDefault={handleSubmit}>
-	<!-- content -->
+	<!-- сожержимое -->
 </form>
 ```
+#### **TypeScript**
+**```src/routes/login/+page.svelte```**
+```svelte
+<script lang="ts">
+	import { invalidateAll, goto } from '$app/navigation';
+	import { applyAction, deserialize } from '$app/forms';
 
-Note that you need to `deserialize` the response before processing it further using the corresponding method from `$app/forms`. `JSON.parse()` isn't enough because form actions - like `load` functions - also support returning `Date` or `BigInt` objects.
+	import type { ActionData } from './$types';
+	import type { ActionResult } from '@sveltejs/kit';
 
-If you have a `+server.js` alongside your `+page.server.js`, `fetch` requests will be routed there by default. To `POST` to an action in `+page.server.js` instead, use the custom `x-sveltekit-action` header:
+	export let form: ActionData;
+
+	let error: any;
+
+	async function handleSubmit(event) {
+		const data = new FormData(this);
+
+		const response = await fetch(this.action, {
+			method: 'POST',
+			body: data
+		});
+
+		const result: ActionResult = deserialize(await response.text());
+
+		if (result.type === 'success') {
+			// повторно запустить все функции `load` после успешного обновления
+			await invalidateAll();
+		}
+
+		applyAction(result);
+	}
+</script>
+
+<form method="POST" on:submit|preventDefault={handleSubmit}>
+	<!-- сожержимое -->
+</form>
+```
+<!-- tabs:end -->
+
+Обратите внимание, что вам необходимо `десериализовать` ответ перед его дальнейшей обработкой с помощью соответствующего метода из `$app/forms`. `JSON.parse()` недостаточно, потому что действия формы - как и функции `load` - также поддерживают возврат объектов `Date` или `BigInt`.
+
+Если у вас есть `+server.js` рядом с вашим `+page.server.js`, запросы `fetch` будут направляться туда по умолчанию. Чтобы направить `POST` на действие в `+page.server.js`, используйте пользовательский заголовок `x-sveltekit-action`:
 
 ```diff
 const response = await fetch(this.action, {
@@ -453,12 +621,12 @@ const response = await fetch(this.action, {
 });
 ```
 
-## Alternatives
+## Альтернативы
 
-Form actions are the preferred way to send data to the server, since they can be progressively enhanced, but you can also use [`+server.js`](routing#server) files to expose (for example) a JSON API. Here's how such an interaction could look like:
+Действия формы являются предпочтительным способом отправки данных на сервер, поскольку они могут быть постепенно усовершенствованы, но вы также можете использовать файлы [`+server.js`](/20-core-concepts/10-routing?id=server) для представления (например) JSON API. Вот как может выглядеть такое взаимодействие:
 
+**```send-message/+page.svelte```**
 ```svelte
-/// file: send-message/+page.svelte
 <script>
 	function rerun() {
 		fetch('/api/ci', {
@@ -467,36 +635,46 @@ Form actions are the preferred way to send data to the server, since they can be
 	}
 </script>
 
-<button on:click={rerun}>Rerun CI</button>
+<button on:click={rerun}>Повторный запуск CI</button>
 ```
 
+<!-- tabs:start -->
+#### **JavaScript**
+**```api/ci/+server.js```**
 ```js
-// @errors: 2355 1360
-/// file: api/ci/+server.js
-
 /** @type {import('./$types').RequestHandler} */
 export function POST() {
-	// do something
+	// что-то сделать
 }
 ```
+#### **TypeScript**
+**```api/ci/+server.ts```**
+```ts
+import type { RequestHandler } from './$types';
+ 
+export const POST = (() => {
+	// что-то сделать
+}) satisfies RequestHandler;
+```
+<!-- tabs:end -->
 
 ## GET против POST
 
-As we've seen, to invoke a form action you must use `method="POST"`.
+Как мы видели, для вызова действия формы необходимо использовать `method="POST"`.
 
-Some forms don't need to `POST` data to the server — search inputs, for example. For these you can use `method="GET"` (or, equivalently, no `method` at all), and SvelteKit will treat them like `<a>` elements, using the client-side router instead of a full page navigation:
+Некоторые формы не нуждаются в отправке данных методом `POST` на сервер — например, поисковые вводы. Для них вы можете использовать `method="GET"` (или, эквивалентно, вообще не использовать `method`), и SvelteKit будет обращаться с ними как с элементами `<a>`, используя маршрутизатор на стороне клиента вместо полной навигации по странице:
 
 ```html
 <form action="/search">
 	<label>
-		Search
+		Поиск
 		<input name="q">
 	</label>
 </form>
 ```
 
-Submitting this form will navigate to `/search?q=...` and invoke your load function but will not invoke an action. As with `<a>` elements, you can set the [`data-sveltekit-reload`](link-options#data-sveltekit-reload) and [`data-sveltekit-noscroll`](link-options#data-sveltekit-noscroll) attributes on the `<form>` to control the router's behaviour.
+Отправка этой формы приведет к переходу по адресу `/search?q=...` и вызовет вашу функцию загрузки, но не вызовет действие. Как и для элементов `<a>`, вы можете установить атрибуты [`data-sveltekit-reload`](/30-advanced/30-link-options?id=data-sveltekit-reload), [`data-sveltekit-replacestate`](/30-advanced/30-link-options?id=data-sveltekit-replacestate), [`data-sveltekit-keepfocus`](/30-advanced/30-link-options?id=data-sveltekit-keepfocus) и [`data-sveltekit-noscroll`](/30-advanced/30-link-options?id=data-sveltekit-noscroll) на `<form>` для управления поведением маршрутизатора.
 
-## Further reading
+## Дальнейшее чтение
 
-- [Tutorial: Forms](https://learn.svelte.dev/tutorial/the-form-element)
+- [Учебник: Формы](https://learn.svelte.dev/tutorial/the-form-element)

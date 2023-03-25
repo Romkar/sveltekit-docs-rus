@@ -863,7 +863,7 @@ body {
  color: red;
 }
 .token.inserted {
- border-bottom:1px dotted #202746;
+ /* border-bottom:1px dotted #202746; */
  text-decoration:none;
  color: green;
 }
