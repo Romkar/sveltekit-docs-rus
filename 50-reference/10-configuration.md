@@ -38,3 +38,5 @@ The `kit` property configures SvelteKit, and can have the following properties:
 ## outDir
 
 ## paths
+
+## prerender

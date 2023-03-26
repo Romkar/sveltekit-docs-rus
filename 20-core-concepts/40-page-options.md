@@ -1,47 +1,49 @@
 # Параметры страницы
 ---
 
-By default, SvelteKit will render (or [prerender](glossary#prerendering)) any component first on the server and send it to the client as HTML. It will then render the component again in the browser to make it interactive in a process called [**hydration**](glossary#hydration). For this reason, you need to ensure that components can run in both places. SvelteKit will then initialize a [**router**](routing) that takes over subsequent navigations.
+По умолчанию SvelteKit будет рендерить (или [пререндерить](/60-appendix/30-glossary?id=Пререндеринг)) любой компонент сначала на сервере и отправлять его на клиент в формате HTML. Затем он снова отрендерит компонент в браузере, чтобы сделать его интерактивным в процессе, называемом [гидратация](/60-appendix/30-glossary?id=Гидратация). По этой причине необходимо убедиться, что компоненты могут работать в обоих местах. Затем SvelteKit инициализирует [маршрутизатор](/20-core-concepts/10-routing), который берет на себя последующую навигацию.
 
-You can control each of these on a page-by-page basis by exporting options from [`+page.js`](routing#page-page-js) or [`+page.server.js`](routing#page-page-server-js), or for groups of pages using a shared [`+layout.js`](routing#layout-layout-js) or [`+layout.server.js`](routing#layout-layout-server-js). To define an option for the whole app, export it from the root layout. Child layouts and pages override values set in parent layouts, so — for example — you can enable prerendering for your entire app then disable it for pages that need to be dynamically rendered.
+Вы можете управлять каждой из них в отдельности, экспортируя опции из [`+page.js`](/20-core-concepts/10-routing?id=pagejs) или [`+page.server.js`](/20-core-concepts/10-routing?id=pageserverjs), или для групп страниц, используя общий [`+layout.js`](/20-core-concepts/10-routing?id=layoutjs) или [`+layout.server.js`](/20-core-concepts/10-routing?id=layoutserverjs). Чтобы определить параметр для всего приложения, экспортируйте его из корневого макета. Дочерние макеты и страницы переопределяют значения, установленные в родительских макетах, поэтому, например, вы можете включить пререндеринг для всего приложения и отключить его для страниц, которые должны быть динамически отображены.
 
-You can mix and match these options in different areas of your app. For example you could prerender your marketing page for maximum speed, server-render your dynamic pages for SEO and accessibility and turn your admin section into an SPA by rendering it on the client only. This makes SvelteKit very versatile.
+Вы можете смешивать и сочетать эти опции в различных областях вашего приложения. Например, вы можете сделать пререндер маркетинговой страницы для максимальной скорости, серверный рендеринг динамических страниц для SEO и доступности и перевести раздел администрирования в SPA, сделав его рендеринг только на клиенте. Это делает SvelteKit очень универсальным.
 
 ## пререндер
 
-It's likely that at least some routes of your app can be represented as a simple HTML file generated at build time. These routes can be [_prerendered_](glossary#prerendering).
+Вполне вероятно, что по крайней мере некоторые маршруты вашего приложения могут быть представлены в виде простого HTML-файла, создаваемого во время сборки. Эти маршруты могут быть [пререндерены](/60-appendix/30-glossary?id=Пререндеринг).
 
+**```+page.js/+page.server.js/+server.js```**
 ```js
-/// file: +page.js/+page.server.js/+server.js
 export const prerender = true;
 ```
 
-Alternatively, you can set `export const prerender = true` in your root `+layout.js` or `+layout.server.js` and prerender everything except pages that are explicitly marked as _not_ prerenderable:
+В качестве альтернативы, вы можете установить `export const prerender = true` в вашем корне `+layout.js` или `+layout.server.js` и пререндерить все, кроме страниц, которые явно помечены как _не_ пререндерируемые:
 
+**```+page.js/+page.server.js/+server.js```**
 ```js
-/// file: +page.js/+page.server.js/+server.js
 export const prerender = false;
 ```
 
-Routes with `prerender = true` will be excluded from manifests used for dynamic SSR, making your server (or serverless/edge functions) smaller. In some cases you might want to prerender a route but also include it in the manifest (for example, with a route like `/blog/[slug]` where you want to prerender your most recent/popular content but server-render the long tail) — for these cases, there's a third option, 'auto':
+Маршруты с `prerender = true` будут исключены из манифестов, используемых для динамического SSR, что сделает ваш сервер (или функции serverless/edge) меньше. В некоторых случаях вы можете захотеть пререндерить маршрут, но также включить его в манифест (например, маршрут типа `/blog/[slug]`, где вы хотите пререндерить ваш самый свежий/популярный контент, но сервер рендерит длинный хвост) - для таких случаев есть третья опция, 'auto':
 
+**```+page.js/+page.server.js/+server.js```**
 ```js
-/// file: +page.js/+page.server.js/+server.js
 export const prerender = 'auto';
 ```
 
-> If your entire app is suitable for prerendering, you can use [`adapter-static`](https://github.com/sveltejs/kit/tree/master/packages/adapter-static), which will output files suitable for use with any static webserver.
+> Если все ваше приложение подходит для пререндеринга, вы можете использовать [`adapter-static`](https://github.com/sveltejs/kit/tree/master/packages/adapter-static), который выведет файлы, пригодные для использования с любым статическим веб-сервером.
 
-The prerenderer will start at the root of your app and generate files for any prerenderable pages or `+server.js` routes it finds. Each page is scanned for `<a>` elements that point to other pages that are candidates for prerendering — because of this, you generally don't need to specify which pages should be accessed. If you _do_ need to specify which pages should be accessed by the prerenderer, you can do so with the `entries` option in the [prerender configuration](configuration#prerender).
+Пререндер запускается в корне вашего приложения и генерирует файлы для всех страниц с возможностью пререндера или маршрутов `+server.js`, которые он находит. Каждая страница сканируется на наличие элементов `<a>`, указывающих на другие страницы, которые являются кандидатами на пререндеринг — поэтому обычно не нужно указывать, какие страницы должны быть доступны. Если вам необходимо указать, какие страницы должны быть доступны пререндеру, вы можете сделать это с помощью опции `entries` в конфигурации [prerender configuration](/50-reference/10-configuration?id=prerender).
 
-While prerendering, the value of `building` imported from [`$app/environment`](modules#$app-environment) will be `true`.
+При пререндеринге значение `building`, импортированного из [`$app/environment`](/50-reference/30-modules?id=appenvironment), будет равно `true`.
 
-### Prerendering server routes
+### Пререндеринг серверных маршрутов
 
-Unlike the other page options, `prerender` also applies to `+server.js` files. These files are _not_ affected from layouts, but will inherit default values from the pages that fetch data from them, if any. For example if a `+page.js` contains this `load` function...
+В отличие от других опций страниц, `prerender` также применяется к файлам `+server.js`. Эти файлы _не_ зависят от макетов, но наследуют значения по умолчанию от страниц, которые получают данные из них, если таковые имеются. Например, если `+page.js` содержит такую функцию `load`...
 
+<!-- tabs:start -->
+#### **JavaScript**
+**```+page.js```**
 ```js
-/// file: +page.js
 export const prerender = true;
 
 /** @type {import('./$types').PageLoad} */
@@ -50,106 +52,137 @@ export async function load({ fetch }) {
 	return await res.json();
 }
 ```
+#### **TypeScript**
+**```+page.ts```**
+```ts
+import type { PageLoad } from './$types';
+export const prerender = true;
+ 
+export const load = (async ({ fetch }) => {
+	const res = await fetch('/my-server-route.json');
+	return await res.json();
+}) satisfies PageLoad;
+```
+<!-- tabs:end -->
 
-...then `src/routes/my-server-route.json/+server.js` will be treated as prerenderable if it doesn't contain its own `export const prerender = false`.
+...тогда `src/routes/my-server-route.json/+server.js` будет рассматриваться как пререндерируемый, если он не содержит собственного `export const prerender = false`.
 
-### When not to prerender
+### Когда не стоит делать пререндер
 
-The basic rule is this: for a page to be prerenderable, any two users hitting it directly must get the same content from the server.
+Основное правило таково: чтобы страница была пререндерируемой, любые два пользователя, обратившиеся к ней напрямую, должны получить от сервера одинаковое содержимое.
 
-> Not all pages are suitable for prerendering. Any content that is prerendered will be seen by all users. You can of course fetch personalized data in `onMount` in a prerendered page, but this may result in a poorer user experience since it will involve blank initial content or loading indicators.
+> Не все страницы подходят для предварительного рендеринга. Любое содержимое, которое отображается с помощью пререндера, будет видно всем пользователям. Конечно, вы можете получить персонализированные данные в `onMount` на странице с пререндерингом, но это может привести к ухудшению пользовательского опыта, поскольку будет включать пустой начальный контент или индикаторы загрузки.
 
-Note that you can still prerender pages that load data based on the page's parameters, such as a `src/routes/blog/[slug]/+page.svelte` route.
+Обратите внимание, что вы все еще можете пререндерить страницы, которые загружают данные на основе параметров страницы, например, маршрут `src/routes/blog/[slug]/+page.svelte`.
 
-Accessing [`url.searchParams`](load#using-url-data-url) during prerendering is forbidden. If you need to use it, ensure you are only doing so in the browser (for example in `onMount`).
+Обращение к [`url.searchParams`](/20-core-concepts/20-load?id=Использование-данных-url) во время пререндеринга запрещено. Если вам необходимо его использовать, убедитесь, что вы делаете это только в браузере (например, в `onMount`).
 
-Pages with [actions](form-actions) cannot be prerendered, because a server must be able to handle the action `POST` requests.
+Страницы с [actions](/20-core-concepts/30-form-actions) не могут быть пререндерены, поскольку сервер должен быть способен обрабатывать запросы `POST`.
 
-### Prerender and ssr
+### Пререндер и ssr
 
-If you set the [ssr option](#ssr) to `false`, each request will result in the same empty HTML shell. Since this would result in unnecessary work, SvelteKit defaults to prerendering any pages it finds where `prerender` is not explicitly set to `false`.
+Если вы установите опцию [ssr](/20-core-concepts/40-page-options?id=ssr) в `false`, каждый запрос будет приводить к одной и той же пустой HTML-оболочке. Поскольку это приведет к ненужной работе, SvelteKit по умолчанию выполняет предпросмотр всех найденных страниц, для которых `prerender` не установлен в явном виде в `false`.
 
-### Route conflicts
+### Конфликты маршрутов
 
-Because prerendering writes to the filesystem, it isn't possible to have two endpoints that would cause a directory and a file to have the same name. For example, `src/routes/foo/+server.js` and `src/routes/foo/bar/+server.js` would try to create `foo` and `foo/bar`, which is impossible.
+Поскольку пререндеринг записывает данные в файловую систему, невозможно иметь две конечные точки, в которых каталог и файл будут иметь одинаковое имя. Например, `src/routes/foo/+server.js` и `src/routes/foo/bar/+server.js` попытались бы создать `foo` и `foo/bar`, что невозможно.
 
-For that reason among others, it's recommended that you always include a file extension — `src/routes/foo.json/+server.js` and `src/routes/foo/bar.json/+server.js` would result in `foo.json` and `foo/bar.json` files living harmoniously side-by-side.
+По этой и другим причинам рекомендуется всегда указывать расширение файла — `src/routes/foo.json/+server.js` и `src/routes/foo/bar.json/+server.js` приведут к тому, что файлы `foo.json` и `foo/bar.json` будут гармонично жить рядом.
 
-For _pages_, we skirt around this problem by writing `foo/index.html` instead of `foo`.
+Для _страниц_ мы обходим эту проблему, записывая `foo/index.html` вместо `foo`.
 
-Note that this will disable client-side routing for any navigation from this page, regardless of whether the router is already active.
+Обратите внимание, что это отключит маршрутизацию на стороне клиента для любой навигации с этой страницы, независимо от того, активен ли уже маршрутизатор.
 
-### Troubleshooting
+### Устранение неполадок
 
 If you encounter an error like 'The following routes were marked as prerenderable, but were not prerendered' it's because the route in question (or a parent layout, if it's a page) has `export const prerender = true` but the page wasn't actually prerendered, because it wasn't reached by the prerendering crawler.
 
-Since these routes cannot be dynamically server-rendered, this will cause errors when people try to access the route in question. There are two ways to fix it:
+Если вы столкнулись с ошибкой типа 'The following routes were marked as prerenderable, but were not prerendered' ("Следующие маршруты были отмечены как пригодные для пререндеринга, но не были пререндерены"), это связано с тем, что данный маршрут (или родительский макет, если это страница) имеет `export const prerender = true`, но страница на самом деле не была пререндерена, потому что до нее не добрался обходчик пререндера.
 
-* Ensure that SvelteKit can find the route by following links from [`config.kit.prerender.entries`](configuration#prerender). Add links to dynamic routes (i.e. pages with `[parameters]` ) to this option if they are not found through crawling the other entry points, else they are not prerendered because SvelteKit doesn't know what value the parameters should have. Pages not marked as prerenderable will be ignored and their links to other pages will not be crawled, even if some of them would be prerenderable.
-* Change `export const prerender = true` to `export const prerender = 'auto'`. Routes with `'auto'` can be dynamically server rendered
+Поскольку эти маршруты не могут быть динамически рендерены сервером, это приведет к ошибкам, когда люди попытаются получить доступ к рассматриваемому маршруту. Есть два способа исправить это:
+
+* Убедитесь, что SvelteKit может найти маршрут по ссылкам из [`config.kit.prerender.entries`](/50-reference/10-configuration?id=prerender). Добавьте ссылки на динамические маршруты (т.е. страницы с `[параметрами]`) в эту опцию, если они не найдены при просмотре других точек входа, иначе они не пререндерятся, потому что SvelteKit не знает какое значение должны иметь параметры. Страницы, не помеченные как пререндеренные, будут игнорироваться, а их ссылки на другие страницы не будут просмотрены, даже если некоторые из них будут пререндеренными.
+* Замените `export const prerender = true` на `export const prerender = 'auto'`. Маршруты с `'auto'` могут динамически рендериться сервером
 
 ## ssr
 
-Normally, SvelteKit renders your page on the server first and sends that HTML to the client where it's [hydrated](glossary#hydration). If you set `ssr` to `false`, it renders an empty 'shell' page instead. This is useful if your page is unable to be rendered on the server (because you use browser-only globals like `document` for example), but in most situations it's not recommended ([see appendix](glossary#ssr)).
+Обычно SvelteKit сначала отображает вашу страницу на сервере и отправляет этот HTML на клиент, где он [гидратируется](/60-appendix/30-glossary?id=Гидратация). Если вы установите `ssr` в `false`, вместо этого будет отображаться пустая страница-"оболочка". Это полезно, если ваша страница не может быть отрисована на сервере (например, из-за использования глобальных файлов только для браузера, таких как `document`), но в большинстве ситуаций это не рекомендуется ([см. приложение](/60-appendix/30-glossary?id=ssr)).
 
+**```+page.js```**
 ```js
-/// file: +page.js
 export const ssr = false;
 ```
 
-If you add `export const ssr = false` to your root `+layout.js`, your entire app will only be rendered on the client — which essentially means you turn your app into an SPA.
+Если вы добавите `export const ssr = false` в корень `+layout.js`, всё ваше приложение будет отображаться только на клиенте - что по сути означает превращение вашего приложения в SPA.
 
 ## csr
 
-Ordinarily, SvelteKit [hydrates](glossary#hydration) your server-rendered HTML into an interactive client-side-rendered (CSR) page. Some pages don't require JavaScript at all — many blog posts and 'about' pages fall into this category. In these cases you can disable CSR:
+Обычно SvelteKit [гидратирует](/60-appendix/30-glossary?id=Гидратация) ваш серверный HTML в интерактивную страницу с клиентским рендерингом (CSR). Некоторые страницы вообще не требуют JavaScript - многие сообщения в блогах и страницы "о себе" попадают в эту категорию. В этих случаях вы можете отключить CSR:
 
+**```+page.js```**
 ```js
-/// file: +page.js
 export const csr = false;
 ```
 
-> If both `ssr` and `csr` are `false`, nothing will be rendered!
+> Если `ssr` и `csr` равны `false`, ничего не будет отображено!
 
 ## trailingSlash
 
-By default, SvelteKit will remove trailing slashes from URLs — if you visit `/about/`, it will respond with a redirect to `/about`. You can change this behaviour with the `trailingSlash` option, which can be one of `'never'` (the default), `'always'`, or `'ignore'`.
+По умолчанию SvelteKit удаляет косую черту из URL-адресов - если вы посетите сайт `/about/`, он ответит перенаправлением на `/about`. Вы можете изменить это поведение с помощью опции `trailingSlash`, которая может быть одной из `'never'` (по умолчанию), `'always'` или `'ignore'`.
 
-As with other page options, you can export this value from a `+layout.js` or a `+layout.server.js` and it will apply to all child pages. You can also export the configuration from `+server.js` files.
+Как и другие параметры страницы, вы можете экспортировать это значение из файла `+layout.js` или `+layout.server.js`, и оно будет применяться ко всем дочерним страницам. Вы также можете экспортировать конфигурацию из файлов `+server.js`.
 
+**```src/routes/+layout.js```**
 ```js
-/// file: src/routes/+layout.js
 export const trailingSlash = 'always';
 ```
 
-This option also affects [prerendering](#prerender). If `trailingSlash` is `always`, a route like `/about` will result in an `about/index.html` file, otherwise it will create `about.html`, mirroring static webserver conventions.
+Этот параметр также влияет на [prerendering](/20-core-concepts/40-page-options?id=пререндер). Если `trailingSlash` имеет значение `always`, маршрут типа `/about` приведет к созданию файла `about/index.html`, в противном случае будет создан `about.html`, зеркально отражая статические соглашения веб-сервера.
 
-> Ignoring trailing slashes is not recommended — the semantics of relative paths differ between the two cases (`./y` from `/x` is `/y`, but from `/x/` is `/x/y`), and `/x` and `/x/` are treated as separate URLs which is harmful to SEO.
+> Игнорировать косые черты не рекомендуется - семантика относительных путей отличается в двух случаях (`./y` из `/x` - это `/y`, а из `/x/` - это `/x/y`), и `/x` и `/x/` рассматриваются как отдельные URL, что вредит SEO.
 
 ## config
 
-With the concept of [adapters](/docs/adapters), SvelteKit is able to run on a variety of platforms. Each of these might have specific configuration to further tweak the deployment — for example on Vercel you could choose to deploy some parts of your app on the edge and others on serverless environments.
+Благодаря концепции [адаптеров](/25-build-and-deploy/20-adapters) SvelteKit может работать на различных платформах. Каждая из них может иметь специфическую конфигурацию для дальнейшей настройки развертывания - например, на Vercel вы можете выбрать развертывание некоторых частей вашего приложения на границе, а других - в бессерверных средах.
 
-`config` is an object with key-value pairs at the top level. Beyond that, the concrete shape is dependent on the adapter you're using. Every adapter should provide a `Config` interface to import for type safety. Consult the documentation of your adapter for more information.
+`config` - это объект с парами ключ-значение на верхнем уровне. После этого конкретная форма зависит от используемого адаптера. Каждый адаптер должен предоставлять интерфейс `Config` для импорта в целях обеспечения безопасности типов. Для получения дополнительной информации обратитесь к документации вашего адаптера.
 
-```js
-// @filename: ambient.d.ts
+<!-- tabs:start -->
+#### **JavaScript**
+**```ambient.d.ts```**
+```ts
 declare module 'some-adapter' {
 	export interface Config { runtime: string }
 }
-
-// @filename: index.js
-// ---cut---
-/// file: src/routes/+page.js
+```
+**```src/routes/+page.js```**
+```js
 /** @type {import('some-adapter').Config} */
 export const config = {
 	runtime: 'edge'
 };
 ```
+#### **TypeScript**
+**```ambient.d.ts```**
+```ts
+declare module 'some-adapter' {
+	export interface Config { runtime: string }
+}
+```
+**```src/routes/+page.ts```**
+```ts
+import type { Config } from 'some-adapter';
+ 
+export const config: Config = {
+	runtime: 'edge'
+};
+```
+<!-- tabs:end -->
 
-`config` objects are merged at the top level (but _not_ deeper levels). This means you don't need to repeat all the values in a `+page.js` if you want to only override some of the values in the upper `+layout.js`. For example this layout configuration...
+Объекты `config` объединяются на верхнем уровне (но _не_ на более глубоких уровнях). Это означает, что вам не нужно повторять все значения в `+page.js`, если вы хотите переопределить только некоторые значения в верхнем `+layout.js`. Например, эта конфигурация макета...
 
+**```src/routes/+layout.js```**
 ```js
-/// file: src/routes/+layout.js
 export const config = {
 	runtime: 'edge',
 	regions: 'all',
@@ -159,10 +192,10 @@ export const config = {
 }
 ```
 
-...is overridden by this page configuration...
+...отменяется этой конфигурацией страницы...
 
+**```src/routes/+page.js```**
 ```js
-/// file: src/routes/+page.js
 export const config = {
 	regions: ['us1', 'us2'],
 	foo: {
@@ -171,8 +204,8 @@ export const config = {
 }
 ```
 
-...which results in the config value `{ runtime: 'edge', regions: ['us1', 'us2'], foo: { baz: true } }` for that page.
+...что приводит к значению конфигурации `{ runtime: 'edge', regions: ['us1', 'us2'], foo: { baz: true } }` для этой страницы.
 
-## Further reading
+## Дальнейшее чтение
 
-- [Tutorial: Page options](https://learn.svelte.dev/tutorial/page-options)
+- [Учебник: Параметры страницы](https://learn.svelte.dev/tutorial/page-options)

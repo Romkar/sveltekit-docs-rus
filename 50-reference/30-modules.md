@@ -6,6 +6,10 @@ SvelteKit делает ряд модулей доступными для ваш�
 > MODULES
 
 ---
+
+## $app/environment
+
+
 ## $app/navigation
 
 ### afterNavigate
