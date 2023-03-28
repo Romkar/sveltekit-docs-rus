@@ -1,17 +1,18 @@
 # Управление состоянием
 ---
 
-If you're used to building client-only apps, state management in an app that spans server and client might seem intimidating. This section provides tips for avoiding some common gotchas.
+Если вы привыкли создавать приложения только для клиентов, управление состояниями в приложении, которое охватывает сервер и клиента, может показаться пугающим. В этом разделе приведены советы по предотвращению некоторых распространенных проблем.
 
-## Avoid shared state on the server
+## Избегайте общего состояния на сервере
 
-Browsers are _stateful_ — state is stored in memory as the user interacts with the application. Servers, on the other hand, are _stateless_ — the content of the response is determined entirely by the content of the request.
+Браузеры являются _состоятельными_ — состояние хранится в памяти по мере того, как пользователь взаимодействует с приложением. Серверы, с другой стороны, являются _бессостоятельными_ — содержание ответа полностью определяется содержанием запроса.
 
-Conceptually, that is. In reality, servers are often long-lived and shared by multiple users. For that reason it's important not to store data in shared variables. For example, consider this code:
+Концептуально это так. В реальности серверы часто являются долгоживущими и используются совместно несколькими пользователями. По этой причине важно не хранить данные в общих переменных. Например, рассмотрим следующий код:
 
+<!-- tabs:start -->
+#### **JavaScript**
+**```+page.server.js```**
 ```js
-// @errors: 7034 7005
-/// file: +page.server.js
 let user;
 
 /** @type {import('./$types').PageServerLoad} */
@@ -24,7 +25,7 @@ export const actions = {
 	default: async ({ request }) => {
 		const data = await request.formData();
 
-		// NEVER DO THIS!
+		// 🚫 НИКОГДА НЕ ДЕЛАЙТЕ ТАК!!!!111
 		user = {
 			name: data.get('name'),
 			embarrassingSecret: data.get('secret')
@@ -32,39 +33,83 @@ export const actions = {
 	}
 }
 ```
+#### **TypeScript**
+**```+page.server.ts```**
+```ts
+import type { PageServerLoad, Actions } from './$types';
+let user;
+ 
+export const load = (() => {
+	return { user };
+}) satisfies PageServerLoad;
+ 
+export const actions = {
+	default: async ({ request }) => {
+		const data = await request.formData();
 
-The `user` variable is shared by everyone who connects to this server. If Alice submitted an embarrassing secret, and Bob visited the page after her, Bob would know Alice's secret. In addition, when Alice returns to the site later in the day, the server may have restarted, losing her data.
+		// 🚫 НИКОГДА НЕ ДЕЛАЙТЕ ТАК!!!!111
+		user = {
+			name: data.get('name'),
+			embarrassingSecret: data.get('secret')
+		};
+	}
+} satisfies Actions
+```
+<!-- tabs:end -->
 
-Instead, you should _authenticate_ the user using [`cookies`](/docs/load#cookies-and-headers) and persist the data to a database.
+Переменная `user` является общей для всех, кто подключается к этому серверу. Если Агата сообщила постыдный секрет, а Глеб посетил страницу после нее, Глеб будет знать [секрет](https://www.youtube.com/watch?v=v4s68ZhZAPA) Агаты. Кроме того, когда Агата вернется на сайт через день, сервер может перезагрузиться, что приведет к потере ее данных.
 
-## No side-effects in load
+Вместо этого следует _аутентифицировать_ пользователя с помощью [`cookies`](/20-core-concepts/20-load?id=Файлы-cookie-и-заголовки) и сохранить данные в базе данных.
 
-For the same reason, your `load` functions should be _pure_ — no side-effects (except maybe the occasional `console.log(...)`). For example, you might be tempted to write to a store inside a `load` function so that you can use the store value in your components:
+## Отсутствие побочных эффектов при загрузке
 
-```js
-/// file: +page.js
-// @filename: ambient.d.ts
+По этой же причине ваши функции `load` должны быть _чистыми_ — никаких побочных эффектов (кроме, может быть, случайного `console.log(...)`). Например, у вас может возникнуть соблазн записать в хранилище внутри функции `load`, чтобы потом использовать значение хранилища в своих компонентах:
+
+<!-- tabs:start -->
+#### **JavaScript**
+**```ambient.d.ts```**
+```ts
 declare module '$lib/user' {
 	export const user: { set: (value: any) => void };
 }
-
-// @filename: index.js
-// ---cut---
+```
+**```+page.js```**
+```js
 import { user } from '$lib/user';
 
 /** @type {import('./$types').PageLoad} */
 export async function load({ fetch }) {
 	const response = await fetch('/api/user');
 
-	// NEVER DO THIS!
+	// 🚫 НИКОГДА НЕ ДЕЛАЙТЕ ТАК!!!!111
 	user.set(await response.json());
 }
 ```
+#### **TypeScript**
+**```ambient.d.ts```**
+```ts
+declare module '$lib/user' {
+	export const user: { set: (value: any) => void };
+}
+```
+**```+page.ts```**
+```ts
+import { user } from '$lib/user';
+import type { PageLoad } from './$types';
+ 
+export const load = (async ({ fetch }) => {
+	const response = await fetch('/api/user');
 
-As with the previous example, this puts one user's information in a place that is shared by _all_ users. Instead, just return the data...
+	// 🚫 НИКОГДА НЕ ДЕЛАЙТЕ ТАК!!!!111
+	user.set(await response.json());
+}) satisfies PageLoad;
+```
+<!-- tabs:end -->
 
+Как и в предыдущем примере, это помещает информацию одного пользователя в место, которое является общим для _всех_ пользователей. Вместо этого просто верните данные...
+
+**```+page.js```**
 ```diff
-/// file: +page.js
 export async function load({ fetch }) {
 	const response = await fetch('/api/user');
 
@@ -74,16 +119,18 @@ export async function load({ fetch }) {
 }
 ```
 
-...and pass it around to the components that need it, or use [`$page.data`](/docs/load#$page-data).
+...и передайте их компонентам, которым они нужны, или используйте [`$page.data`](/20-core-concepts/20-load?id=pagedata).
 
-If you're not using SSR, then there's no risk of accidentally exposing one user's data to another. But you should still avoid side-effects in your `load` functions — your application will be much easier to reason about without them.
+Если вы не используете SSR, то нет риска случайного раскрытия данных одного пользователя другому. Но вы все равно должны избегать побочных эффектов в функциях `load` - без них ваше приложение будет гораздо проще понимать.
 
-## Using stores with context
+## Использование хранилищ с контекстом
 
-You might wonder how we're able to use `$page.data` and other [app stores](/docs/modules#$app-stores) if we can't use our own stores. The answer is that app stores on the server use Svelte's [context API](https://learn.svelte.dev/tutorial/context-api) — the store is attached to the component tree with `setContext`, and when you subscribe you retrieve it with `getContext`. We can do the same thing with our own stores:
+Вам может быть интересно, как мы можем использовать `$page.data` и другие [app stores](/50-reference/30-modules?id=appstores), если мы не можем использовать наши собственные хранилища. Ответ заключается в том, что хранилища приложений на сервере используют [контекстный API Svelte](https://learn.svelte.dev/tutorial/context-api) - хранилище прикрепляется к дереву компонентов с помощью `setContext`, а когда вы подписываетесь, вы получаете его с помощью `getContext`. Мы можем сделать то же самое с нашими собственными хранилищами:
 
+<!-- tabs:start -->
+#### **JavaScript**
+**```src/routes/+layout.svelte```**
 ```svelte
-/// file: src/routes/+layout.svelte
 <script>
 	import { setContext } from 'svelte';
 	import { writable } from 'svelte/store';
@@ -91,68 +138,108 @@ You might wonder how we're able to use `$page.data` and other [app stores](/docs
 	/** @type {import('./$types').LayoutData} */
 	export let data;
 
-	// Create a store and update it when necessary...
+	// Создайте хранилище и обновляйте его по мере необходимости...
 	const user = writable();
 	$: user.set(data.user);
 
-	// ...and add it to the context for child components to access
+	// ...и добавьте его в контекст, чтобы дочерние компоненты могли получить к нему доступ
 	setContext('user', user);
 </script>
 ```
-
+#### **TypeScript**
+**```src/routes/+layout.svelte```**
 ```svelte
-/// file: src/routes/user/+page.svelte
+<script lang="ts">
+	import { setContext } from 'svelte';
+	import { writable } from 'svelte/store';
+
+	import type { LayoutData } from './$types';
+
+	export let data: LayoutData;
+	// Создайте хранилище и обновляйте его по мере необходимости...
+	const user = writable();
+	$: user.set(data.user);
+	// ...и добавьте его в контекст, чтобы дочерние компоненты могли получить к нему доступ
+	setContext('user', user);
+</script>
+```
+<!-- tabs:end -->
+
+**```src/routes/user/+page.svelte```**
+```svelte
 <script>
 	import { getContext } from 'svelte';
 
-	// Retrieve user store from context
+	// Получение хранилища пользователя из контекста
 	const user = getContext('user');
 </script>
 
-<p>Welcome {$user.name}</p>
+<p>Добро пожаловать {$user.name}</p>
 ```
 
-If you're not using SSR (and can guarantee that you won't need to use SSR in future) then you can safely keep state in a shared module, without using the context API.
+Если вы не используете SSR (и можете гарантировать, что вам не понадобится использовать SSR в будущем), то вы можете безопасно хранить состояние в общем модуле, не используя контекстный API.
 
-## Component state is preserved
+## Состояние компонента сохраняется
 
-When you navigate around your application, SvelteKit reuses existing layout and page components. For example, if you have a route like this...
+Когда вы перемещаетесь по своему приложению, SvelteKit повторно использует существующие компоненты макета и страницы. Например, если у вас есть такой маршрут...
 
+<!-- tabs:start -->
+#### **JavaScript**
+**```src/routes/blog/[slug]/+page.svelte```**
 ```svelte
-/// file: src/routes/blog/[slug]/+page.svelte
 <script>
 	/** @type {import('./$types').PageData} */
 	export let data;
 
-	// THIS CODE IS BUGGY!
+	// ЭТОТ КОД СОДЕРЖИТ ОШИБКИ!
 	const wordCount = data.content.split(' ').length;
 	const estimatedReadingTime = wordCount / 250;
 </script>
 
 <header>
 	<h1>{data.title}</h1>
-	<p>Reading time: {Math.round(estimatedReadingTime)} minutes</p>
+	<p>Время чтения: {Math.round(estimatedReadingTime)} минут</p>
 </header>
 
 <div>{@html data.content}</div>
 ```
+#### **TypeScript**
+**```src/routes/blog/[slug]/+page.svelte```**
+```svelte
+<script lang="ts">
+	import type { PageData } from './$types';
 
-...then navigating from `/blog/my-short-post` to `/blog/my-long-post` won't cause the component to be destroyed and recreated. The `data` prop (and by extension `data.title` and `data.content`) will change, but because the code isn't re-running, `estimatedReadingTime` won't be recalculated.
+	export let data: PageData;
+	// ЭТОТ КОД СОДЕРЖИТ ОШИБКИ!
+	const wordCount = data.content.split(' ').length;
+	const estimatedReadingTime = wordCount / 250;
+</script>
 
-Instead, we need to make the value [_reactive_](https://learn.svelte.dev/tutorial/reactive-assignments):
+<header>
+	<h1>{data.title}</h1>
+	<p>Время чтения: {Math.round(estimatedReadingTime)} минут</p>
+</header>
 
+<div>{@html data.content}</div>
+```
+<!-- tabs:end -->
+
+...то переход от `/blog/my-short-post` к `/blog/my-long-post` не приведет к уничтожению и воссозданию компонента. Реквизит `data` (и, соответственно, `data.title` и `data.content`) изменится, но поскольку код не выполняется повторно, `estimatedReadingTime` не будет пересчитан.
+
+Вместо этого нам нужно сделать значение [_реактивным_](https://learn.svelte.dev/tutorial/reactive-assignments):
+
+**```src/routes/blog/[slug]/+page.svelte```**
 ```diff
-/// file: src/routes/blog/[slug]/+page.svelte
-<script>
+ <script>
 	/** @type {import('./$types').PageData} */
 	export let data;
 
 +	$: wordCount = data.content.split(' ').length;
 +	$: estimatedReadingTime = wordCount / 250;
-</script>
+ </script>
 ```
 
-Reusing components like this means that things like sidebar scroll state are preserved, and you can easily animate between changing values. However, if you do need to completely destroy and remount a component on navigation, you can use this pattern:
+Подобное повторное использование компонентов означает, что такие вещи, как состояние прокрутки боковой панели, сохраняются, и вы можете легко анимировать изменяющиеся значения. Однако, если вам необходимо полностью уничтожить и снова монтировать компонент при навигации, вы можете использовать этот шаблон:
 
 ```svelte
 {#key $page.url.pathname}
@@ -160,10 +247,10 @@ Reusing components like this means that things like sidebar scroll state are pre
 {/key}
 ```
 
-## Storing state in the URL
+## Хранение состояния в URL
 
-If you have state that should survive a reload and/or affect SSR, such as filters or sorting rules on a table, URL search parameters (like `?sort=price&order=ascending`) are a good place to put them. You can put them in `<a href="...">` or `<form action="...">` attributes, or set them programmatically via `goto('?key=value')`. They can be accessed inside `load` functions via the `url` parameter, and inside components via `$page.url.searchParams`.
+Если у вас есть состояние, которое должно пережить перезагрузку и/или повлиять на SSR, такое как фильтры или правила сортировки в таблице, то параметры поиска URL (например, `?sort=price&order=ascending`) являются хорошим местом для их размещения. Вы можете поместить их в атрибуты `<a href="...">` или `<form action="...">`, или задать их программно через `goto('?key=value')`. Доступ к ним можно получить внутри функций `load` через параметр `url`, а внутри компонентов - через `$page.url.searchParams`.
 
-## Storing ephemeral state in snapshots
+## Хранение эфемерного состояния в снэпшотах
 
-Some UI state, such as 'is the accordion open?', is disposable — if the user navigates away or refreshes the page, it doesn't matter if the state is lost. In some cases, you _do_ want the data to persist if the user navigates to a different page and comes back, but storing the state in the URL or in a database would be overkill. For this, SvelteKit provides [snapshots](/docs/snapshots), which let you associate component state with a history entry.
+Некоторые состояния пользовательского интерфейса, такие как "открыт ли аккордеон?", являются одноразовыми — если пользователь перейдет на другую страницу или обновит ее, не имеет значения, если состояние будет потеряно. В некоторых случаях вы _хотите_, чтобы данные сохранялись, если пользователь перейдет на другую страницу и вернется, но хранить состояние в URL или в базе данных было бы излишним. Для этого SvelteKit предоставляет [снэпшоты](/30-advanced/65-snapshots), которые позволяют связать состояние компонента с записью истории.

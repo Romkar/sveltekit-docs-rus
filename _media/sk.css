@@ -25,7 +25,7 @@ div#app {
  text-align:center
 }
 div#app:empty:before {
- content:"Loading..."
+ content:"Загрузка..."
 }
 img.emoji {
  height:1.2em
@@ -613,7 +613,7 @@ body {
  overflow:hidden;
  text-decoration:none;
  text-overflow:ellipsis;
- white-space:nowrap
+ /* white-space:nowrap */
 }
 .sidebar ul li a:hover {
  text-decoration:underline
@@ -628,7 +628,7 @@ body {
  font-weight:600
 }
 .app-sub-sidebar li:before {
- content:"";
+ content:"•";
  padding-right:4px;
  float:left
 }

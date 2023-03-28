@@ -95,8 +95,6 @@ export const load = (async ({ fetch }) => {
 
 ### Устранение неполадок
 
-If you encounter an error like 'The following routes were marked as prerenderable, but were not prerendered' it's because the route in question (or a parent layout, if it's a page) has `export const prerender = true` but the page wasn't actually prerendered, because it wasn't reached by the prerendering crawler.
-
 Если вы столкнулись с ошибкой типа 'The following routes were marked as prerenderable, but were not prerendered' ("Следующие маршруты были отмечены как пригодные для пререндеринга, но не были пререндерены"), это связано с тем, что данный маршрут (или родительский макет, если это страница) имеет `export const prerender = true`, но страница на самом деле не была пререндерена, потому что до нее не добрался обходчик пререндера.
 
 Поскольку эти маршруты не могут быть динамически рендерены сервером, это приведет к ошибкам, когда люди попытаются получить доступ к рассматриваемому маршруту. Есть два способа исправить это:
