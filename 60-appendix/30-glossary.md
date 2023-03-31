@@ -1,50 +1,50 @@
 # Глоссарий
 ---
 
-The core of SvelteKit provides a highly configurable rendering engine. This section describes some of the terms used when discussing rendering. A reference for setting these options is provided in the documentation above.
+Ядро SvelteKit обеспечивает высококонфигурируемый механизм рендеринга. В этом разделе описаны некоторые термины, используемые при обсуждении рендеринга. Ссылки на настройку этих параметров приведены в документации выше.
 
 ## CSR
 
-Client-side rendering (CSR) is the generation of the page contents in the web browser using JavaScript.
+Рендеринг на стороне клиента 'Client-Side Rendering' (CSR) - это генерация содержимого страницы в веб-браузере с помощью JavaScript.
 
-In SvelteKit, client-side rendering will be used by default, but you can turn off JavaScript with [the `csr = false` page option](page-options#csr).
+В SvelteKit рендеринг на стороне клиента будет использоваться по умолчанию, но вы можете отключить JavaScript с помощью [параметры страницы `csr = false`](/20-core-concepts/40-page-options?id=csr).
 
 ## Гидратация
 
-Svelte components store some state and update the DOM when the state is updated. When fetching data during SSR, by default SvelteKit will store this data and transmit it to the client along with the server-rendered HTML. The components can then be initialized on the client with that data without having to call the same API endpoints again. Svelte will then check that the DOM is in the expected state and attach event listeners in a process called hydration. Once the components are fully hydrated, they can react to changes to their properties just like any newly created Svelte component.
+Компоненты Svelte хранят некоторое состояние и обновляют DOM, когда состояние обновляется. При получении данных во время SSR, по умолчанию SvelteKit будет хранить эти данные и передавать их клиенту вместе с HTML-файлом, отрендеренным сервером. Затем компоненты могут быть инициализированы на клиенте с этими данными без необходимости повторного вызова тех же конечных точек API. Затем Svelte проверит, что DOM находится в ожидаемом состоянии, и подключит слушателей событий в процессе, называемом гидратацией. Когда компоненты полностью гидратированы, они могут реагировать на изменения своих свойств так же, как и любой вновь созданный компонент Svelte.
 
-In SvelteKit, pages will be hydrated by default, but you can turn off JavaScript with [the `csr = false` page option](page-options#csr).
+В SvelteKit страницы будут гидратированы по умолчанию, но вы можете отключить JavaScript с помощью [параметры страницы `csr = false`](/20-core-concepts/40-page-options?id=csr).
 
 ## Пререндеринг
 
-Prerendering means computing the contents of a page at build time and saving the HTML for display. This approach has the same benefits as traditional server-rendered pages, but avoids recomputing the page for each visitor and so scales nearly for free as the number of visitors increases. The tradeoff is that the build process is more expensive and prerendered content can only be updated by building and deploying a new version of the application.
+Пререндеринг означает вычисление содержимого страницы во время сборки и сохранение HTML для отображения. Этот подход имеет те же преимущества, что и традиционные страницы с серверным рендерингом, но позволяет избежать повторного вычисления страницы для каждого посетителя и поэтому практически бесплатно масштабируется при увеличении числа посетителей. Компромисс заключается в том, что процесс сборки является более дорогостоящим, а обновить предварительно отрендеренный контент можно только путем создания и развёртывания новой версии приложения.
 
-Not all pages can be prerendered. The basic rule is this: for content to be prerenderable, any two users hitting it directly must get the same content from the server, and the page must not contain [actions](form-actions). Note that you can still prerender content that is loaded based on the page's parameters as long as all users will be seeing the same prerendered content.
+Не все страницы могут быть пререндерены. Основное правило заключается в следующем: чтобы содержимое страницы могло быть пререндеренным, любые два пользователя, обратившиеся к ней напрямую, должны получить одинаковое содержимое с сервера, и страница не должна содержать [действий](/20-core-concepts/30-form-actions). Обратите внимание, что вы все еще можете пререндерить содержимое, которое загружается на основе параметров страницы, если все пользователи будут видеть одно и то же пререндеренное содержимое.
 
-Pre-rendered pages are not limited to static content. You can build personalized pages if user-specific data is fetched and rendered client-side. This is subject to the caveat that you will experience the downsides of not doing SSR for that content as discussed above.
+Предварительно отрендеренные страницы не ограничиваются статическим содержимым. Вы можете создавать персонализированные страницы, если данные, специфичные для пользователя, будут получены и отображены на стороне клиента. Это возможно только с оговоркой, что вы будете испытывать недостатки, связанные с отсутствием SSR для этого контента, как обсуждалось выше.
 
-In SvelteKit, you can control prerendering with [the `prerender` page option](page-options#prerender) and [`prerender` config](configuration#prerender) in `svelte.config.js`.
+В SvelteKit вы можете управлять пререндерингом с помощью [параметра страницы `prerender`](/20-core-concepts/40-page-options?id=пререндер) и [конфигурацией `prerender`](/50-reference/10-configuration?id=prerender) в `svelte.config.js`.
 
 ## Маршрутизация
 
-By default, when you navigate to a new page (by clicking on a link or using the browser's forward or back buttons), SvelteKit will intercept the attempted navigation and handle it instead of allowing the browser to send a request to the server for the destination page. SvelteKit will then update the displayed contents on the client by rendering the component for the new page, which in turn can make calls to the necessary API endpoints. This process of updating the page on the client in response to attempted navigation is called client-side routing.
+По умолчанию, когда вы переходите на новую страницу (щелкая по ссылке или используя кнопки браузера вперед или назад), SvelteKit перехватывает попытку навигации и обрабатывает ее вместо того, чтобы позволить браузеру отправить запрос на сервер для получения целевой страницы. Затем SvelteKit обновит отображаемое содержимое на клиенте путем рендеринга компонента для новой страницы, который, в свою очередь, может выполнять вызовы к необходимым конечным точкам API. Этот процесс обновления страницы на клиенте в ответ на попытку навигации называется маршрутизацией на стороне клиента.
 
-In SvelteKit, client-side routing will be used by default, but you can skip it with [`data-sveltekit-reload`](link-options#data-sveltekit-reload).
+В SvelteKit маршрутизация на стороне клиента будет использоваться по умолчанию, но вы можете пропустить ее с помощью [`data-sveltekit-reload`](/30-advanced/30-link-options?id=data-sveltekit-reload).
 
 ## SPA
 
-A single-page app (SPA) is an application in which all requests to the server load a single HTML file which then does client-side rendering of the requested contents based on the requested URL. All navigation is handled on the client-side in a process called client-side routing with per-page contents being updated and common layout elements remaining largely unchanged. SPAs do not provide SSR, which has the shortcoming described above. However, some applications are not greatly impacted by these shortcomings such as a complex business application behind a login where SEO would not be important and it is known that users will be accessing the application from a consistent computing environment.
+Одностраничное приложение 'Single-Page Application' (SPA) - это приложение, в котором все запросы к серверу загружают один HTML-файл, который затем выполняет рендеринг запрашиваемого содержимого на стороне клиента на основе запрошенного URL. Вся навигация обрабатывается на стороне клиента в процессе, называемом маршрутизацией на стороне клиента, при этом содержимое каждой страницы обновляется, а общие элементы макета остаются практически неизменными. SPA не обеспечивают SSR, что имеет недостаток, описанный выше. Однако некоторые приложения не сильно страдают от этих недостатков, например, сложные бизнес-приложения доступные после ввода логина и пароля, где SEO не имеет большого значения, и известно, что пользователи будут обращаться к приложению из согласованной вычислительной среды (чаще всего локальной сети предприятия).
 
-In SvelteKit, you can [build a SPA with `adapter-static`](adapter-static#spa-mode).
+В SvelteKit вы можете [построить SPA с `adapter-static`](/25-build-and-deploy/50-adapter-static?id=Режим-spa).
 
 ## SSG
 
-Static Site Generation (SSG) is a term that refers to a site where every page is prerendered. SvelteKit was not built to do only static site generation like some tools and so may not scale as well to efficiently render a very large number of pages as tools built specifically for that purpose. However, in contrast to most purpose-built SSGs, SvelteKit does nicely allow for mixing and matching different rendering types on different pages. One benefit of fully prerendering a site is that you do not need to maintain or pay for servers to perform SSR. Once generated, the site can be served from CDNs, leading to great "time to first byte" performance. This delivery model is often referred to as JAMstack.
+Генерация статических сайтов 'Static Site Generation' (SSG) - это термин, который относится к сайту, где каждая страница предварительно отрисована. SvelteKit был создан не только для генерации статических сайтов, как некоторые инструменты, и поэтому может не так хорошо масштабироваться для эффективного рендеринга большого количества страниц, как инструменты, созданные специально для этой цели. Однако, в отличие от большинства специально созданных SSG, SvelteKit позволяет смешивать и сочетать различные типы рендеринга на разных страницах. Одним из преимуществ полной предварительной визуализации сайта является то, что вам не нужно содержать или оплачивать серверы для выполнения SSR. После генерации сайт можно обслуживать из CDN, что приводит к отличной производительности "время до первого байта". Эту модель доставки часто называют JAMstack.
 
-In SvelteKit, you can do static site generation by using [`adapter-static`](adapter-static) or by configuring every page to be prerendered using [the `prerender` page option](page-options#prerender) or [`prerender` config](configuration#prerender) in `svelte.config.js`.
+В SvelteKit вы можете сгенерировать статический сайт, используя [`adapter-static`](/25-build-and-deploy/50-adapter-static) или настроить каждую страницу на пререндер с помощью [параметра страницы `prerender`](/20-core-concepts/40-page-options?id=пререндер) или [конфигурации `prerender`](/50-reference/10-configuration?id=prerender) в `svelte.config.js`.
 
 ## SSR
 
-Server-side rendering (SSR) is the generation of the page contents on the server. SSR is generally preferred for SEO. While some search engines can index content that is dynamically generated on the client-side it may take longer even in these cases. It also tends to improve perceived performance and makes your app accessible to users if JavaScript fails or is disabled (which happens [more often than you probably think](https://kryogenix.org/code/browser/everyonehasjs.html)).
+Рендеринг на стороне сервера 'Server-Side Rendering' (SSR) - это генерация содержимого страницы на сервере. SSR обычно предпочтительнее для SEO. Хотя некоторые поисковые системы могут индексировать содержимое, которое динамически генерируется на стороне клиента, даже в этих случаях может потребоваться больше времени. Это также улучшает воспринимаемую производительность и делает ваше приложение доступным для пользователей, если JavaScript не работает или отключен (что случается [чаще, чем вы думаете](https://kryogenix.org/code/browser/everyonehasjs.html)).
 
-In SvelteKit, pages are server-side rendered by default. You can disable SSR with [the `ssr` page option](https://kit.svelte.dev/docs/page-options#ssr).
+В SvelteKit страницы по умолчанию рендерятся на стороне сервера. Вы можете отключить SSR с помощью [параметра страницы `ssr`](/20-core-concepts/40-page-options?id=ssr).
