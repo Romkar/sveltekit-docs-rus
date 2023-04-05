@@ -1,4 +1,4 @@
-# Cloudflare обработчики
+# Cloudflare Workers
 ---
 
 To deploy to [Cloudflare Workers](https://workers.cloudflare.com/), use [`adapter-cloudflare-workers`](https://github.com/sveltejs/kit/tree/master/packages/adapter-cloudflare-workers).

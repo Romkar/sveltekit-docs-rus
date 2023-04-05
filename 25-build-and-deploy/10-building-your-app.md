@@ -1,15 +1,15 @@
 # Создание вашего приложения
 ---
 
-Building a SvelteKit app happens in two stages, which both happen when you run `vite build` (usually via `npm run build`).
+Сборка приложения SvelteKit происходит в два этапа, которые оба происходят, когда вы запускаете `vite build` (обычно через `npm run build`).
 
-Firstly, Vite creates an optimized production build of your server code, your browser code, and your service worker (if you have one). [Prerendering](page-options#prerender) is executed at this stage, if appropriate.
+Сначала Vite создает оптимизированную продуктовую сборку кода вашего сервера, кода браузера и рабочего сервиса (если он у вас есть). На этом этапе выполняется [пререндер](/20-core-concepts/40-page-options?id=пререндер), если это необходимо.
 
-Secondly, an _adapter_ takes this production build and tunes it for your target environment — more on this on the following pages.
+Затем, _адаптер_ берет эту продуктовую сборку и настраивает ее для вашей целевой среды - подробнее об этом на следующих страницах.
 
-## During the build
+## Во время сборки
 
-SvelteKit will load your `+page/layout(.server).js` files (and all files they import) for analysis during the build. Any code that should _not_ be executed at this stage must check that `building` from [`$app/environment`](modules#$app-environment) is `false`:
+SvelteKit загрузит ваши файлы `+page/layout(.server).js` (и все файлы, которые они импортируют) для анализа во время сборки. Любой код, который _не_ должен выполняться на этом этапе, должен проверить, что `building` из [`$app/environment`](/50-reference/30-modules?id=appenvironment) равно `false`:
 
 ```diff
 +import { building } from '$app/environment';
@@ -24,6 +24,6 @@ export function load() {
 }
 ```
 
-## Preview your app
+## Предпросмотр вашего приложения
 
-After building, you can view your production build locally with `vite preview` (via `npm run preview`). Note that this will run the app in Node, and so is not a perfect reproduction of your deployed app — adapter-specific adjustments like the [`platform` object](adapters#platform-specific-context) do not apply to previews.
+После сборки вы можете просмотреть вашу сборку локально с помощью `vite preview` (через `npm run preview`). Обратите внимание, что при этом приложение будет запущено в Node, и поэтому не является идеальной копией вашего развернутого приложения - специфические для адаптера настройки, такие как [объект `platform`](/25-build-and-deploy/20-adapters?id=Платформо-специфичный-контекст), не применяются к предварительным версиям.

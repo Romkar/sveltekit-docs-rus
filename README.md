@@ -29,7 +29,7 @@ SvelteKit - это фреймворк, который **растет вмест�
 
 
 ---
-**Переведено:** `обновлено 31.03.2023`
+**Переведено:** `обновлено 05.04.2023`
 
 - [x] Начало работы
   - [x] [Введение](10-getting-started/10-introduction.md)
@@ -43,13 +43,13 @@ SvelteKit - это фреймворк, который **растет вмест�
   - [x] [Параметры страницы](20-core-concepts/40-page-options.md)
   - [x] [Управление состоянием](20-core-concepts/50-state-management.md)
 - [ ] Сборка и развёртывание
-  - [ ] [Создание вашего приложения](25-build-and-deploy/10-building-your-app.md)
-  - [ ] [Адаптеры](25-build-and-deploy/20-adapters.md)
+  - [x] [Создание вашего приложения](25-build-and-deploy/10-building-your-app.md)
+  - [x] [Адаптеры](25-build-and-deploy/20-adapters.md)
   - [ ] [Развёртывание с нулевой конфигурацией](25-build-and-deploy/30-adapter-auto.md)
   - [ ] [Серверы Node](25-build-and-deploy/40-adapter-node.md)
   - [ ] [Создание статических сайтов](25-build-and-deploy/50-adapter-static.md)
-  - [ ] [Страницы Cloudflare](25-build-and-deploy/60-adapter-cloudflare.md)
-  - [ ] [Cloudflare обработчики](25-build-and-deploy/70-adapter-cloudflare-workers.md)
+  - [ ] [Cloudflare Pages](25-build-and-deploy/60-adapter-cloudflare.md)
+  - [ ] [Cloudflare Workers](25-build-and-deploy/70-adapter-cloudflare-workers.md)
   - [ ] [Netlify](25-build-and-deploy/80-adapter-netlify.md)
   - [ ] [Vercel](25-build-and-deploy/90-adapter-vercel.md)
   - [ ] [Создание адаптеров](25-build-and-deploy/99-writing-adapters.md)

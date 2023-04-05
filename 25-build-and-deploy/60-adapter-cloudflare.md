@@ -1,4 +1,4 @@
-# Страницы Cloudflare
+# Cloudflare Pages
 ---
 
 To deploy to [Cloudflare Pages](https://developers.cloudflare.com/pages/), use [`adapter-cloudflare`](https://github.com/sveltejs/kit/tree/master/packages/adapter-cloudflare).
