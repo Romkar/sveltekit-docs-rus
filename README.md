@@ -29,7 +29,9 @@ SvelteKit - это фреймворк, который **растет вмест�
 
 
 ---
-**Переведено:** `обновлено 05.04.2023`
+![GitHub last commit](https://img.shields.io/github/last-commit/Romkar/sveltekit-docs-rus?color=FF3E00&style=flat-square)
+
+**Переведено:**
 
 - [x] Начало работы
   - [x] [Введение](10-getting-started/10-introduction.md)
