@@ -1,19 +1,19 @@
 # Развёртывание с нулевой конфигурацией
 ---
 
-When you create a new SvelteKit project with `npm create svelte@latest`, it installs [`adapter-auto`](https://github.com/sveltejs/kit/tree/master/packages/adapter-auto) by default. This adapter automatically installs and uses the correct adapter for supported environments when you deploy:
+Когда вы создаете новый проект SvelteKit с помощью `npm create svelte@latest`, он по умолчанию устанавливает [`adapter-auto`](https://github.com/sveltejs/kit/tree/master/packages/adapter-auto). Этот адаптер автоматически устанавливается и использует правильный адаптер для поддерживаемых сред при развертывании:
 
-- [`@sveltejs/adapter-cloudflare`](adapter-cloudflare) for [Cloudflare Pages](https://developers.cloudflare.com/pages/)
-- [`@sveltejs/adapter-netlify`](adapter-netlify) for [Netlify](https://netlify.com/)
-- [`@sveltejs/adapter-vercel`](adapter-vercel) for [Vercel](https://vercel.com/)
-- [`svelte-adapter-azure-swa`](https://github.com/geoffrich/svelte-adapter-azure-swa) for [Azure Static Web Apps](https://docs.microsoft.com/en-us/azure/static-web-apps/)
+- [`@sveltejs/adapter-cloudflare`](/25-build-and-deploy/60-adapter-cloudflare) для [Cloudflare Pages](https://developers.cloudflare.com/pages/)
+- [`@sveltejs/adapter-netlify`](/25-build-and-deploy/80-adapter-netlify) для [Netlify](https://netlify.com/)
+- [`@sveltejs/adapter-vercel`](/25-build-and-deploy/90-adapter-vercel) для [Vercel](https://vercel.com/)
+- [`svelte-adapter-azure-swa`](https://github.com/geoffrich/svelte-adapter-azure-swa) для [Azure Static Web Apps](https://docs.microsoft.com/en-us/azure/static-web-apps/)
 
-It's recommended to install the appropriate adapter to your `devDependencies` once you've settled on a target environment, since this will add the adapter to your lockfile and slightly improve install times on CI.
+Рекомендуется установить соответствующий адаптер в `devDependencies`, как только вы определились с целевым окружением, поскольку это добавит адаптер в ваш lockfile и немного улучшит время установки при непрерывной интеграции (CI - Continuous Integration).
 
-## Environment-specific configuration
+## Конфигурация для конкретного окружения
 
-To add configuration options, such as `{ edge: true }` in [`adapter-vercel`](adapter-vercel) and [`adapter-netlify`](adapter-netlify), you must install the underlying adapter — `adapter-auto` does not take any options.
+Чтобы добавить опции конфигурации, такие как `{ edge: true }` в [`adapter-vercel`](/25-build-and-deploy/90-adapter-vercel) и [`adapter-netlify`](/25-build-and-deploy/80-adapter-netlify), вы должны установить базовый адаптер - `adapter-auto` не принимает никаких опций.
 
-## Adding community adapters
+## Добавление адаптеров сообщества
 
-You can add zero-config support for additional adapters by editing [adapters.js](https://github.com/sveltejs/kit/blob/master/packages/adapter-auto/adapters.js) and opening a pull request.
+Вы можете добавить поддержку нулевой конфигурации для дополнительных адаптеров, отредактировав файл [adapters.js](https://github.com/sveltejs/kit/blob/master/packages/adapter-auto/adapters.js) и открыв запрос на изменение кода (pull request).
