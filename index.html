@@ -78,7 +78,7 @@
           function (hook, vm) {
             hook.beforeEach(function (html) {
                 url = 'https://github.com/Romkar/sveltekit-docs-rus/blob/main/' + vm.route.file;
-              var editHtml = '[:memo:](' + url + ')\n';
+              var editHtml = '[:memo:](' + url + ')           [-> Svelte](https://sveltedocs.ru/)\n';
               return (
                 editHtml + html
               );
