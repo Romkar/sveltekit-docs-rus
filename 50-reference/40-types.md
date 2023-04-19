@@ -9,6 +9,7 @@ The following types can be imported from `@sveltejs/kit`:
 
 ### LoadEvent
 
+### RequestEvent 
 
 ## Private types
 

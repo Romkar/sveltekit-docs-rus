@@ -48,7 +48,7 @@ SvelteKit - это фреймворк, который **растет вмест�
   - [x] [Создание вашего приложения](25-build-and-deploy/10-building-your-app.md)
   - [x] [Адаптеры](25-build-and-deploy/20-adapters.md)
   - [x] [Развёртывание с нулевой конфигурацией](25-build-and-deploy/30-adapter-auto.md)
-  - [ ] [Серверы Node](25-build-and-deploy/40-adapter-node.md)
+  - [x] [Серверы Node](25-build-and-deploy/40-adapter-node.md)
   - [ ] [Создание статических сайтов](25-build-and-deploy/50-adapter-static.md)
   - [ ] [Cloudflare Pages](25-build-and-deploy/60-adapter-cloudflare.md)
   - [ ] [Cloudflare Workers](25-build-and-deploy/70-adapter-cloudflare-workers.md)

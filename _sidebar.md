@@ -13,7 +13,7 @@
   * [Параметры страницы](20-core-concepts/40-page-options.md)
   * [Управление состоянием](20-core-concepts/50-state-management.md)
 
-* Сборка и развертывание
+* Сборка и развёртывание
   * [Создание вашего приложения](25-build-and-deploy/10-building-your-app.md)
   * [Адаптеры](25-build-and-deploy/20-adapters.md)
   * [Развёртывание с нулевой конфигурацией](25-build-and-deploy/30-adapter-auto.md)
