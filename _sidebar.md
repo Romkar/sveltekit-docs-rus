@@ -19,6 +19,7 @@
   * [Развёртывание с нулевой конфигурацией](25-build-and-deploy/30-adapter-auto.md)
   * [Серверы Node](25-build-and-deploy/40-adapter-node.md)
   * [Создание статических сайтов](25-build-and-deploy/50-adapter-static.md)
+  * [Одностраничные приложения](25-build-and-deploy/55-single-page-apps.md)
   * [Cloudflare Pages](25-build-and-deploy/60-adapter-cloudflare.md)
   * [Cloudflare Workers](25-build-and-deploy/70-adapter-cloudflare-workers.md)
   * [Netlify](25-build-and-deploy/80-adapter-netlify.md)
