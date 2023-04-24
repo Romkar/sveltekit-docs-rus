@@ -5,8 +5,6 @@
 
 ## Данные страницы
 
-A `+page.svelte` file can have a sibling `+page.js` (or `+page.ts`) that exports a `load` function, the return value of which is available to the page via the `data` prop:
-
 Файл `+page.svelte` может иметь дочерний `+page.js` (или `+page.ts`), экспортирующий функцию `load`, возвращаемое значение которой доступно странице через параметр `data`:
 
 <!-- tabs:start -->
