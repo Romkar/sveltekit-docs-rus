@@ -45,3 +45,4 @@ Disallow: /60-appendix/10-migrating.md
 Disallow: /60-appendix/20-additional-resources.md
 Disallow: /60-appendix/30-glossary.md
 Sitemap: https://svelte-kit.ru/sitemap.txt
+
