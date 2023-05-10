@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Русская документация SvelteKit</title>
+  <link rel="icon" href="/_media/favicon.png" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+  <meta name="description" content="Description">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+  <meta name="keywords" content="русский, документация, docs, доки, svelte, kit, sveltekit, svelte kit, руководство, инструкция, гайд, туториал, tutorial, russian, guide, " />
+  <meta name="description" content="русская документация SvelteKit" />
+  <meta name="yandex-verification" content="f991e27d36a80eac" />
+  <link rel="stylesheet" href="/_media/sk.css">
+  <link rel="stylesheet" href="/_media/toc.css">
+
+  <!-- Yandex.Metrika counter -->
+    <script type="text/javascript" >
+      (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+      m[i].l=1*new Date();
+      for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
+      k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})
+      (window, document, "script", "https://mc.yandex.ru/metrika/tag.js", "ym");
+
+      ym(92815834, "init", {
+          clickmap:true,
+          trackLinks:true,
+          accurateTrackBounce:true
+      });
+    </script>
+    <noscript><div><img src="https://mc.yandex.ru/watch/92815834" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+  <!-- /Yandex.Metrika counter -->
+</head>
+<body>
+
+<style>
+:root {
+  --theme-color: #FF4000;
+  }
+</style>
+
+
+  <div id="app"></div>
+  <script>
+    window.$docsify = {
+      name: 'SvelteKit',
+      repo: '',
+      loadSidebar: true,
+      maxLevel: 4,
+      subMaxLevel: 2,
+      auto2top: true,
+      routerMode: 'history',
+      search: {
+          noData: {
+            '/': 'Никаких результатов!',
+          },
+          paths: 'auto',
+          placeholder: {
+            '/': 'Поиск',
+          },
+          namespace: 'sveltekit',
+      },
+      pagination: {
+        previousText: 'Назад',
+        nextText: {
+          '/': 'Далее'
+        },
+        crossChapter: true,
+        crossChapterText: true,
+      },
+      tabs: {
+        theme: 'material'
+      },
+
+      toc: {
+        scope: '.markdown-section',
+        headings: 'h2, h3',
+        title: 'На этой странице',
+      },
+      plugins: [
+          function (hook, vm) {
+            hook.beforeEach(function (html) {
+                url = 'https://github.com/Romkar/sveltekit-docs-rus/blob/main/' + vm.route.file;
+              var editHtml = '[:memo:](' + url + ')           [-> Svelte](https://sveltedocs.ru/)\n';
+              return (
+                editHtml + html
+              );
+            });
+            hook.doneEach(function () {
+                /// https://github.com/docsifyjs/docsify/issues/351
+                // true = show debug log
+                let dd = false 
+                let TARGET_QUERY = 'id'
+                let SCROLL_DELAY = 2000 // in milisecond
+                let location = window.location
+
+                dd&&console.log('custom scroll plugin called!')
+                let currentUrlWithoutHash = new URL(
+                    location.origin+location.pathname+
+                    location.search+location.hash.substring(1)
+                )
+                let urlQueryParam = currentUrlWithoutHash.searchParams
+                let isUrlHasIdQuery = urlQueryParam.has(TARGET_QUERY)
+                if(isUrlHasIdQuery){
+                    dd&&console.log('url has id, will scroll to element')
+                    let urlId = urlQueryParam.get(TARGET_QUERY)
+                    // run delayed, to make sure everything loaded
+                    setTimeout(function() {
+                        dd&&console.log('will scroll now!')
+                        try{
+                            document.querySelector('#'+urlId)
+                                .scrollIntoView()
+                        } catch(e){ dd&&console.log('custom scroll failed',e) }
+                    }, SCROLL_DELAY);
+                }
+            });
+          },
+        ],
+      copyCode: {
+        buttonText : '📋',
+        errorText  : 'ошибка',
+        successText: 'скопировано'
+      }
+    }
+  </script>
+
+  <script src="//cdn.jsdelivr.net/npm/docsify@4/lib/docsify.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/docsify@4/lib/plugins/search.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-bash.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-markdown.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-nginx.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-javascript.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-typescript.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-diff.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-json.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-yaml.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/docsify-copy-code/dist/docsify-copy-code.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/docsify-pagination@2.10.0/dist/docsify-pagination.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/docsify-tabs@1"></script>
+  <script src="//cdn.jsdelivr.net/npm/docsify-toc@1.1.0/dist/toc.min.js"></script>
+</body>
+</html>
